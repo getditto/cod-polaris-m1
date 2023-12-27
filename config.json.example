@@ -1,0 +1,13 @@
+{
+  "log-level": "Info",
+  "ditto": {
+    "app-id": "xxxbf442-0aee-4f10-9000-a58654873e38",
+    "app-token": "xxx3cec6-ac1c-4989-8749-94450106cc9d",
+    "shared-key": "xxxHAgEAMBMGByqGSM49AgEGCCqGSM49AwEHBG0wawIBAQQgTeNnwNh61gNm1DUk4oHoHDfaZWedg9FsF7NNHlWTXWihRANCAATSegomETrHkNgIbK8lGC8fZamn5+lLlhSKwmSLfMCMkXUhwG6xmwD1pDlpRtV7kgElzRaPav8gdcXMghBBbsYU",
+    "offline-token": "xxx1c2VyX2lkaUFUQUsgVGVzdGZleHBpcnl4GDIwMjMtMTItMDhUMDQ6NTk6NTkuOTk5WmlzaWduYXR1cmV4WGd2S1N5d1NEM21jUGpKMDMwY0dPNEk2SnJkRFNWUEFPMWhTbDBKL2VESEh4M3FlbTFMWXJJN1FnajBFaEtwZktoUXB4dkk4SlV1Uyt3UFpqQ091eTBnPT0",
+    "use-cloud": "false",
+    "use-lan": "false",
+    "use-ble": "true",
+    "bpa-url": "http://ditto.bpa.local"
+  }
+}
