@@ -1,10 +1,7 @@
 import { init, Authenticator, Collection, Ditto, Identity, Subscription, TransportConfig } from '@dittolive/ditto'
 import { v4 as uuidv4 } from 'uuid';
 
-
-
 let nconf = require("nconf")
-
 
 let ditto: Ditto
 let collection: Collection
@@ -14,7 +11,7 @@ let interval = 2000 // 1000ms or 1Hz
 let counter = 0
 let presenceObserver
 
-const startTime: number = Date.now();
+//const startTime: number = Date.now();
 
 nconf.argv()
   .env()
@@ -30,9 +27,9 @@ process.once('SIGINT', async () => {
 });
 
 // Random number generator for fake data
-function randomIntFromInterval(min: number, max: number) { // min and max included 
-  return Math.floor(Math.random() * (max - min + 1) + min)
-}
+//function randomIntFromInterval(min: number, max: number) { // min and max included 
+//  return Math.floor(Math.random() * (max - min + 1) + min)
+//}
 
 // Sleeper
 function sleep(ms: number) {
@@ -48,12 +45,14 @@ function doOnInterval() {
 
   counter += 1
 
+  //  const currentTime: number = startTime + (interval * speed * counter); // Current time after 1 hour (milliseconds)
+
   let siteID = `${ditto.siteID}`
   console.log(`SITE ID: ${siteID}`)
   // This is just enough fake data
   let payload = {
     "_id": dID,
-    "title": "logjammer",
+    "title": "cod-polaris-m1",
     "description": "test marker",
     "timestamp": Date.now(),
     "nodeId": "alpha",
@@ -90,6 +89,7 @@ async function main() {
   transportConfig.peerToPeer.bluetoothLE.isEnabled = config.USE_BLE
   transportConfig.peerToPeer.lan.isEnabled = config.USE_LAN
 
+  // }
   const authHandler = {
     authenticationRequired: async function(authenticator: Authenticator) {
       await authenticator.loginWithToken("full_access", "dummy-provider")
@@ -108,6 +108,12 @@ async function main() {
       type: 'sharedKey',
       appID: config.APP_ID,
       sharedKey: config.SHARED_KEY
+    }
+  } else if (config.BPA_URL == "portal") {
+    identity = {
+      type: 'onlinePlayground',
+      appID: config.APP_ID,
+      token: config.APP_TOKEN,
     }
   } else {
     identity = {
