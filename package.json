@@ -1,0 +1,13 @@
+{
+  "dependencies": {
+    "@dittolive/ditto": "^4.5.1",
+    "@types/node": "^20.5.1",
+    "nconf": "=0.12.0",
+    "sense-hat-led": "^1.2.0",
+    "uuid": "^9.0.1",
+    "node-gpsd-client": "^1.4.1"
+  },
+  "devDependencies": {
+    "@types/uuid": "^9.0.4"
+  }
+}

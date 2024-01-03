@@ -1,0 +1,12 @@
+{
+  "ditto": {
+    "app-id": "your-app-id-here",
+    "app-token": "your-app-token-here",
+    "shared-key": "",
+    "offline-token": "",
+    "use_cloud": true,
+    "use_lan": true,
+    "use_ble": true,
+    "bpa-url": "portal"
+  }
+}
