@@ -5,7 +5,8 @@ Simple Ditto app - representing a COD node
 
 Once you have this repo cloned:
 
-1) Create a `./config.json` file with the appropriate BigPeer values. There is a template in this repo at `config.json.example`
+1) Create a `./config.json` file with the appropriate BigPeer (or offline dev
+token) values. There is a template in this repo at `config.json.example`
 
 ```
 {
@@ -21,13 +22,42 @@ Once you have this repo cloned:
   }
 ```
 
-2) Compile the Typescript
+2) Install dependencies
+
 ```
-tsc
+npm install
+```
+
+3) Compile the Typescript
+
+```
+npm run build
 ```
 ## Running
 
-After you setup the environment variables in `.env` and compile with `tsc` you can run the service with: 
+After you setup the environment variables in `.env` and compile with `tsc`
+(i.e. `npm run build`) you can run the service with:
+
 ```
-node index.js
+npm start
+```
+
+## Development
+
+To run lint and formatting checks:
+
+```
+npm run lint
+```
+
+To fix any lint errors that can be resolved automatially:
+
+```
+npm run lint-fix
+```
+
+To reformat typescript files per .prettierrc settings:
+
+```
+npm run format
 ```
