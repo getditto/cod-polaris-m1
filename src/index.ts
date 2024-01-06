@@ -68,7 +68,18 @@ async function main() {
   await init()
   console.log("Starting cod-polaris-m1...")
 
-  const config: Record<string, string | boolean> = {
+  interface Config {
+    APP_ID: string
+    APP_TOKEN: string
+    OFFLINE_TOKEN: string
+    SHARED_KEY: string
+    USE_CLOUD: boolean
+    USE_LAN: boolean
+    USE_BLE: boolean
+    BPA_URL: string
+  }
+
+  const config: Config = {
     APP_ID: getConfig('ditto:app-id', ''),
     APP_TOKEN: getConfig('ditto:app-token', ''),
     OFFLINE_TOKEN: getConfig('ditto:offline-token', ''),
@@ -81,8 +92,8 @@ async function main() {
 
   // We're testing BLE here
   const transportConfig = new TransportConfig()
-  transportConfig.peerToPeer.bluetoothLE.isEnabled = config.USE_BLE as boolean
-  transportConfig.peerToPeer.lan.isEnabled = config.USE_LAN as boolean
+  transportConfig.peerToPeer.bluetoothLE.isEnabled = config.USE_BLE
+  transportConfig.peerToPeer.lan.isEnabled = config.USE_LAN
 
   // }
   const authHandler = {
@@ -102,29 +113,29 @@ async function main() {
   if (config.BPA_URL == "NA") {
     identity = {
       type: 'sharedKey',
-      appID: config.APP_ID as string,
-      sharedKey: config.SHARED_KEY as string
+      appID: config.APP_ID,
+      sharedKey: config.SHARED_KEY
     }
   } else if (config.BPA_URL == "portal") {
     identity = {
       type: 'onlinePlayground',
-      appID: config.APP_ID as string,
-      token: config.APP_TOKEN as string,
+      appID: config.APP_ID,
+      token: config.APP_TOKEN
     }
   } else {
     identity = {
       type: 'onlineWithAuthentication',
-      appID: config.APP_ID as string,
+      appID: config.APP_ID,
       enableDittoCloudSync: false,
       authHandler: authHandler,
-      customAuthURL: config.BPA_URL as string,
+      customAuthURL: config.BPA_URL
     }
   }
 
   const ditto = new Ditto(identity, "./ditto")
 
   if (config.BPA_URL == "NA") {
-    ditto.setOfflineOnlyLicenseToken(config.OFFLINE_TOKEN as string)
+    ditto.setOfflineOnlyLicenseToken(config.OFFLINE_TOKEN)
   }
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const transportConditionsObserver = ditto.observeTransportConditions((condition, _source) => {
