@@ -1,4 +1,4 @@
-import { exec } from "child_process"
+import { exec } from 'child_process'
 
 // Promise wrapper around callback-based exec().
 // Avoid blocking the event loop.

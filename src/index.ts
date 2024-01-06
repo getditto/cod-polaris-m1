@@ -9,12 +9,10 @@ import {
 } from '@dittolive/ditto'
 import { v4 as uuidv4 } from 'uuid'
 
-
 const interval = 2000 // 1000ms or 1Hz
 let counter = 0
 
 //const startTime: number = Date.now();
-
 
 process.once('SIGINT', async () => {
     try {
@@ -63,7 +61,6 @@ function doOnInterval(ditto: Ditto, collection: Collection) {
 
     console.log(`Upserting to ditto: [${counter}]`, payload)
 }
-
 
 async function main() {
     await init()
