@@ -1,3 +1,4 @@
+import { Config } from './config'
 import {
     init,
     Authenticator,
@@ -8,14 +9,12 @@ import {
 } from '@dittolive/ditto'
 import { v4 as uuidv4 } from 'uuid'
 
-import * as nconf from 'nconf'
 
 const interval = 2000 // 1000ms or 1Hz
 let counter = 0
 
 //const startTime: number = Date.now();
 
-nconf.argv().env().file({ file: 'config.json' })
 
 process.once('SIGINT', async () => {
     try {
@@ -65,41 +64,17 @@ function doOnInterval(ditto: Ditto, collection: Collection) {
     console.log(`Upserting to ditto: [${counter}]`, payload)
 }
 
-const getConfig = (key: string, fallback: string | boolean) =>
-    nconf.get(key) || fallback
-const asBoolean = (value: boolean | string | number) =>
-    [true, 'true', 'True', 'TRUE', '1', 1].includes(value)
 
 async function main() {
     await init()
     console.log('Starting cod-polaris-m1...')
 
-    interface Config {
-        APP_ID: string
-        APP_TOKEN: string
-        OFFLINE_TOKEN: string
-        SHARED_KEY: string
-        USE_CLOUD: boolean
-        USE_LAN: boolean
-        USE_BLE: boolean
-        BPA_URL: string
-    }
-
-    const config: Config = {
-        APP_ID: getConfig('ditto:app-id', ''),
-        APP_TOKEN: getConfig('ditto:app-token', ''),
-        OFFLINE_TOKEN: getConfig('ditto:offline-token', ''),
-        SHARED_KEY: getConfig('ditto:shared-key', ''),
-        USE_CLOUD: asBoolean(getConfig('ditto:use-cloud', true)),
-        USE_LAN: asBoolean(getConfig('ditto:use-lan', true)),
-        USE_BLE: asBoolean(getConfig('ditto:use-ble', true)),
-        BPA_URL: getConfig('ditto:bpa-url', ''),
-    }
+    const config = new Config('./config.json')
 
     // We're testing BLE here
     const transportConfig = new TransportConfig()
-    transportConfig.peerToPeer.bluetoothLE.isEnabled = config.USE_BLE
-    transportConfig.peerToPeer.lan.isEnabled = config.USE_LAN
+    transportConfig.peerToPeer.bluetoothLE.isEnabled = config.getBool('USE_BLE')
+    transportConfig.peerToPeer.lan.isEnabled = config.getBool('USE_LAN')
 
     // }
     const authHandler = {
@@ -114,39 +89,42 @@ async function main() {
             console.log(`Auth token expiring in ${secondsRemaining} seconds`)
         },
     }
-
-    console.log(`BPA_URL: ${config.BPA_URL}`)
+    const bpaUrl = config.getStr('BPA_URL')
+    const appId = config.getStr('APP_ID')
+    console.log(`BPA_URL: ${bpaUrl}`)
 
     let identity: Identity
-    if (config.BPA_URL == 'NA') {
+    // TODO use empty string instead of NA?
+    if (bpaUrl == 'NA') {
         identity = {
             type: 'sharedKey',
-            appID: config.APP_ID,
-            sharedKey: config.SHARED_KEY,
+            appID: appId,
+            sharedKey: config.getStr('SHARED_KEY'),
         }
-    } else if (config.BPA_URL == 'portal') {
+    } else if (bpaUrl == 'portal') {
         identity = {
             type: 'onlinePlayground',
-            appID: config.APP_ID,
-            token: config.APP_TOKEN,
+            appID: appId,
+            token: config.getStr('APP_TOKEN'),
         }
     } else {
         identity = {
             type: 'onlineWithAuthentication',
-            appID: config.APP_ID,
+            appID: config.getStr('APP_ID'),
             enableDittoCloudSync: false,
             authHandler: authHandler,
-            customAuthURL: config.BPA_URL,
+            customAuthURL: bpaUrl,
         }
     }
 
     const ditto = new Ditto(identity, './ditto')
 
-    if (config.BPA_URL == 'NA') {
-        ditto.setOfflineOnlyLicenseToken(config.OFFLINE_TOKEN)
+    if (bpaUrl == 'NA') {
+        ditto.setOfflineOnlyLicenseToken(config.getStr('OFFLINE_TOKEN'))
     }
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const transportConditionsObserver = ditto.observeTransportConditions(
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         (condition, _source) => {
             if (condition === 'BLEDisabled') {
                 console.log('BLE disabled')
