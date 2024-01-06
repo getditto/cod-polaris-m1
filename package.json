@@ -4,7 +4,9 @@
   "version": "0.0.1",
   "scripts": {
     "build": "tsc",
-    "start": "tsc && node dist/index.js"
+    "start": "tsc && node dist/index.js",
+    "lint": "eslint . --ext .ts",
+    "lint-fix": "eslint . --ext .ts --fix"
   },
   "author": "DittoLive",
   "license": "Apache-2.0",
@@ -12,11 +14,18 @@
     "@dittolive/ditto": "^4.5.1",
     "@types/node": "^20.5.1",
     "nconf": "=0.12.0",
+    "node-gpsd-client": "^1.4.1",
     "sense-hat-led": "^1.2.0",
-    "uuid": "^9.0.1",
-    "node-gpsd-client": "^1.4.1"
+    "uuid": "^9.0.1"
   },
   "devDependencies": {
-    "@types/uuid": "^9.0.4"
+    "@types/uuid": "^9.0.4",
+    "@typescript-eslint/eslint-plugin": "^6.17.0",
+    "@typescript-eslint/parser": "^6.17.0",
+    "eslint": "^8.56.0",
+    "eslint-config-standard-with-typescript": "^43.0.0",
+    "eslint-plugin-import": "^2.29.1",
+    "eslint-plugin-promise": "^6.1.1",
+    "typescript": "^5.3.3"
   }
 }
