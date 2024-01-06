@@ -1,15 +1,10 @@
-import { init, Authenticator, Collection, Ditto, Identity, Subscription, TransportConfig } from '@dittolive/ditto'
-import { v4 as uuidv4 } from 'uuid';
+import { init, Authenticator, Collection, Ditto, Identity, TransportConfig } from '@dittolive/ditto'
+import { v4 as uuidv4 } from 'uuid'
 
-let nconf = require("nconf")
+import * as nconf from 'nconf'
 
-let ditto: Ditto
-let collection: Collection
-let transportConfig: TransportConfig
-let identity: Identity
-let interval = 2000 // 1000ms or 1Hz
+const interval = 2000 // 1000ms or 1Hz
 let counter = 0
-let presenceObserver
 
 //const startTime: number = Date.now();
 
@@ -27,7 +22,7 @@ process.once('SIGINT', async () => {
 });
 
 // Random number generator for fake data
-//function randomIntFromInterval(min: number, max: number) { // min and max included 
+//function randomIntFromInterval(min: number, max: number) { // min and max included
 //  return Math.floor(Math.random() * (max - min + 1) + min)
 //}
 
@@ -41,16 +36,16 @@ function sleep(ms: number) {
 const dID = uuidv4();
 
 // This is the Ditto doc generator
-function doOnInterval() {
+function doOnInterval(ditto: Ditto, collection: Collection) {
 
   counter += 1
 
   //  const currentTime: number = startTime + (interval * speed * counter); // Current time after 1 hour (milliseconds)
 
-  let siteID = `${ditto.siteID}`
+  const siteID = `${ditto.siteID}`
   console.log(`SITE ID: ${siteID}`)
   // This is just enough fake data
-  let payload = {
+  const payload = {
     "_id": dID,
     "title": "cod-polaris-m1",
     "description": "test marker",
@@ -66,14 +61,14 @@ function doOnInterval() {
   console.log(`Upserting to ditto: [${counter}]`, payload)
 }
 
-const getConfig = (key: string, fallback?: any) => nconf.get(key) || fallback;
-const asBoolean = (value: any) => [true, 'true', 'True', 'TRUE', '1', 1].includes(value);
+const getConfig = (key: string, fallback: string | boolean) => nconf.get(key) || fallback;
+const asBoolean = (value: boolean | string | number) => [true, 'true', 'True', 'TRUE', '1', 1].includes(value);
 
 async function main() {
   await init()
   console.log("Starting cod-polaris-m1...")
 
-  const config: Record<string, any> = {
+  const config: Record<string, string | boolean> = {
     APP_ID: getConfig('ditto:app-id', ''),
     APP_TOKEN: getConfig('ditto:app-token', ''),
     OFFLINE_TOKEN: getConfig('ditto:offline-token', ''),
@@ -85,9 +80,9 @@ async function main() {
   };
 
   // We're testing BLE here
-  transportConfig = new TransportConfig()
-  transportConfig.peerToPeer.bluetoothLE.isEnabled = config.USE_BLE
-  transportConfig.peerToPeer.lan.isEnabled = config.USE_LAN
+  const transportConfig = new TransportConfig()
+  transportConfig.peerToPeer.bluetoothLE.isEnabled = config.USE_BLE as boolean
+  transportConfig.peerToPeer.lan.isEnabled = config.USE_LAN as boolean
 
   // }
   const authHandler = {
@@ -103,34 +98,36 @@ async function main() {
 
   console.log(`BPA_URL: ${config.BPA_URL}`)
 
+  let identity: Identity
   if (config.BPA_URL == "NA") {
     identity = {
       type: 'sharedKey',
-      appID: config.APP_ID,
-      sharedKey: config.SHARED_KEY
+      appID: config.APP_ID as string,
+      sharedKey: config.SHARED_KEY as string
     }
   } else if (config.BPA_URL == "portal") {
     identity = {
       type: 'onlinePlayground',
-      appID: config.APP_ID,
-      token: config.APP_TOKEN,
+      appID: config.APP_ID as string,
+      token: config.APP_TOKEN as string,
     }
   } else {
     identity = {
       type: 'onlineWithAuthentication',
-      appID: config.APP_ID,
+      appID: config.APP_ID as string,
       enableDittoCloudSync: false,
       authHandler: authHandler,
-      customAuthURL: config.BPA_URL,
+      customAuthURL: config.BPA_URL as string,
     }
   }
 
-  ditto = new Ditto(identity, "./ditto")
+  const ditto = new Ditto(identity, "./ditto")
 
   if (config.BPA_URL == "NA") {
-    ditto.setOfflineOnlyLicenseToken(config.OFFLINE_TOKEN)
+    ditto.setOfflineOnlyLicenseToken(config.OFFLINE_TOKEN as string)
   }
-  const transportConditionsObserver = ditto.observeTransportConditions((condition, source) => {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const transportConditionsObserver = ditto.observeTransportConditions((condition, _source) => {
     if (condition === 'BLEDisabled') {
       console.log('BLE disabled')
     } else if (condition === 'NoBLECentralPermission') {
@@ -145,7 +142,8 @@ async function main() {
   ditto.startSync()
 
   // Console out the peers found
-  presenceObserver = ditto.presence.observe((graph) => {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const presenceObserver = ditto.presence.observe((graph) => {
     if (graph.remotePeers.length != 0) {
       graph.remotePeers.forEach((peer) => {
         console.log("peer connection: ", peer.deviceName, peer.connections[0].connectionType)
@@ -154,13 +152,13 @@ async function main() {
   })
 
   // Basic Ditto collection and subscription
-  collection = ditto.store.collection("TAK_Markers")
+  const collection = ditto.store.collection("TAK_Markers")
 
   // Wait five seconds at start to try and find BLE peers before writing docs
   await sleep(5000)
 
   // Do the thing
-  setInterval(doOnInterval, interval)
+  setInterval(() => doOnInterval(ditto, collection), interval)
 }
 
 main()
