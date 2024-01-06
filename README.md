@@ -37,6 +37,27 @@ npm run build
 
 After you setup the environment variables in `.env` and compile with `tsc`
 (i.e. `npm run build`) you can run the service with:
+
 ```
 npm start
+```
+
+## Development
+
+To run lint and formatting checks:
+
+```
+npm run lint
+```
+
+To fix any lint errors that can be resolved automatially:
+
+```
+npm run lint-fix
+```
+
+To reformat typescript files per .prettierrc settings:
+
+```
+npm run format
 ```
