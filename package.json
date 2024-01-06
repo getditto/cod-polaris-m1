@@ -1,4 +1,13 @@
 {
+  "name": "cod-polaris-m1",
+  "description": "Ditto Common Operational Database prototyping app",
+  "version": "0.0.1",
+  "scripts": {
+    "build": "tsc",
+    "start": "tsc && node dist/index.js"
+  },
+  "author": "DittoLive",
+  "license": "Apache-2.0",
   "dependencies": {
     "@dittolive/ditto": "^4.5.1",
     "@types/node": "^20.5.1",
