@@ -162,3 +162,9 @@ async function main() {
 }
 
 main()
+    .then(() => {
+        console.debug('main() done')
+    })
+    .catch((e) => {
+        console.error(`main() error: ${e}`)
+    })
