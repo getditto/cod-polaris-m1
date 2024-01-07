@@ -77,6 +77,11 @@ async function main() {
             appID: appId,
             token: config.getStr('APP_TOKEN'),
         }
+    } else if (bpaUrl == 'offline') {
+        identity = {
+            type: 'offlinePlayground',
+            appID: config.getStr('APP_ID'),
+        }
     } else {
         identity = {
             type: 'onlineWithAuthentication',
@@ -89,7 +94,8 @@ async function main() {
 
     const ditto = new Ditto(identity, './ditto')
 
-    if (bpaUrl == 'NA') {
+    if (bpaUrl == 'NA' || bpaUrl == 'offline') {
+        console.debug('--> Setting offline only license..')
         ditto.setOfflineOnlyLicenseToken(config.getStr('OFFLINE_TOKEN'))
     }
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
