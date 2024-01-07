@@ -1,4 +1,4 @@
-import { DocumentID } from '@dittolive/ditto'
+import { Attachment, DocumentID } from '@dittolive/ditto'
 
 export interface Payload {
     _id: DocumentID
@@ -9,4 +9,5 @@ export interface Payload {
     state: string
     isRemoved: boolean
     siteId: string
+    image?: Attachment
 }

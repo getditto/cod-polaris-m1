@@ -15,7 +15,7 @@ export class Config {
     strDefaults: Map<string, string | null> = new Map([])
 
     // Add all shouty keys here
-    boolKeys = ['USE_CLOUD', 'USE_LAN', 'USE_BLE']
+    boolKeys = ['USE_CLOUD', 'USE_LAN', 'USE_BLE', 'PRODUCE_IMAGES']
     strKeys = ['APP_ID', 'APP_TOKEN', 'OFFLINE_TOKEN', 'SHARED_KEY', 'BPA_URL']
 
     toConfKey(appKey: string): string {

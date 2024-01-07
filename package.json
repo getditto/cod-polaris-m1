@@ -11,16 +11,17 @@
     "format": "prettier --write ."
   },
   "files": [
-      "/dist"
+    "/dist"
   ],
   "author": "DittoLive",
   "license": "Apache-2.0",
   "dependencies": {
-    "@dittolive/ditto": "^4.5.1",
+    "@dittolive/ditto": "^4.5.1-experimental.aarch64-linux.1.aarch64",
     "@types/node": "^20.5.1",
     "nconf": "=0.12.0",
     "node-gpsd-client": "^1.4.1",
     "sense-hat-led": "^1.2.0",
+    "strip-ansi": "^6.0.1",
     "uuid": "^9.0.1"
   },
   "devDependencies": {

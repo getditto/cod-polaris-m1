@@ -5,5 +5,5 @@ export const DEFAULT_DESCRIPTION = 'test marker'
 export const DEFAULT_NODE_ID = 'alpha'
 export const DEFAULT_STATE = 'published'
 
-export const DEFAULT_MSG_INTERVAL = 1000
+export const DEFAULT_MSG_INTERVAL = 5000
 export const DEFAULT_TEST_DURATION_SEC = 30

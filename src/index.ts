@@ -164,7 +164,12 @@ async function main() {
 
     // Begin test...
     if (mode == Mode.Producer) {
-        const producer = new Producer(ditto, DEFAULT_COLLECTION, docId)
+        const producer = new Producer(
+            ditto,
+            DEFAULT_COLLECTION,
+            docId,
+            config.getBool('PRODUCE_IMAGES')
+        )
         await producer.start(DEFAULT_MSG_INTERVAL)
         await sleep(DEFAULT_TEST_DURATION_SEC * 1000)
         const stats = await producer.stop()
