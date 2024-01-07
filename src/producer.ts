@@ -1,5 +1,4 @@
 import { Collection, Ditto, DocumentID } from '@dittolive/ditto'
-import { v4 as uuidv4 } from 'uuid'
 import {
     DEFAULT_DESCRIPTION,
     DEFAULT_NODE_ID,
@@ -21,11 +20,11 @@ export class Producer {
     finished: boolean
     interval: NodeJS.Timeout | null
 
-    constructor(ditto: Ditto, collName: string) {
+    constructor(ditto: Ditto, collName: string, docId: DocumentID) {
         this.ditto = ditto
         this.collName = collName
         this.counter = 0
-        this.docId = new DocumentID(uuidv4())
+        this.docId = docId
         this.collection = null
         this.finished = false
         this.interval = null

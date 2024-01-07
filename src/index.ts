@@ -5,6 +5,7 @@ import {
     Ditto,
     Identity,
     TransportConfig,
+    DocumentID,
 } from '@dittolive/ditto'
 import {
     DEFAULT_COLLECTION,
@@ -13,6 +14,8 @@ import {
 } from './default'
 import { Producer } from './producer'
 import assert from 'assert'
+import { v4 as uuidv4 } from 'uuid'
+import { Consumer } from './consumer'
 
 process.once('SIGINT', async () => {
     try {
@@ -156,24 +159,34 @@ async function main() {
     // Wait five seconds at start to try and find BLE peers before writing docs
     await sleep(5000)
 
-    const producer = new Producer(ditto, DEFAULT_COLLECTION)
+    const docId = new DocumentID(uuidv4())
 
     // Begin test...
     if (mode == Mode.Producer) {
+        const producer = new Producer(ditto, DEFAULT_COLLECTION, docId)
         await producer.start(DEFAULT_MSG_INTERVAL)
         await sleep(DEFAULT_TEST_DURATION_SEC * 1000)
         const stats = await producer.stop()
         console.log(`Producer wrote ${stats.records} records (upserts)`)
     } else {
         assert(mode == Mode.Consumer)
-        console.log('XXX TODO implement consumer')
+        const consumer = new Consumer(ditto, DEFAULT_COLLECTION, docId)
+        await consumer.start()
+        // since we don't coordinate start time, add 5 extra secs for consumer
+        await sleep((DEFAULT_TEST_DURATION_SEC + 5) * 1000)
+        const stats = await consumer.stop()
+        console.log(`Consumer read ${stats.uniqueRecords} unique records`)
     }
+    await ditto.stopSync()
 }
 
 main()
     .then(() => {
         console.debug('main() done')
+        // XXX not sure why we don't shut down automatically
+        process.exit()
     })
     .catch((e) => {
         console.error(`main() error: ${e}`)
+        throw e
     })
