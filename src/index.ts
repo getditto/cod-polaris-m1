@@ -2,17 +2,16 @@ import { Config } from './config'
 import {
     init,
     Authenticator,
-    Collection,
     Ditto,
     Identity,
     TransportConfig,
 } from '@dittolive/ditto'
-import { v4 as uuidv4 } from 'uuid'
-
-const interval = 2000 // 1000ms or 1Hz
-let counter = 0
-
-//const startTime: number = Date.now();
+import {
+    DEFAULT_COLLECTION,
+    DEFAULT_MSG_INTERVAL,
+    DEFAULT_TEST_DURATION_SEC,
+} from './default'
+import { Producer } from './producer'
 
 process.once('SIGINT', async () => {
     try {
@@ -35,33 +34,6 @@ function sleep(ms: number) {
     })
 }
 
-const dID = uuidv4()
-
-// This is the Ditto doc generator
-function doOnInterval(ditto: Ditto, collection: Collection) {
-    counter += 1
-
-    //  const currentTime: number = startTime + (interval * speed * counter); // Current time after 1 hour (milliseconds)
-
-    const siteID = `${ditto.siteID}`
-    console.log(`SITE ID: ${siteID}`)
-    // This is just enough fake data
-    const payload = {
-        _id: dID,
-        title: 'cod-polaris-m1',
-        description: 'test marker',
-        timestamp: Date.now(),
-        nodeId: 'alpha',
-        state: 'published',
-        isRemoved: false,
-        siteId: siteID,
-        timeMillis: Date.now() + 0.001,
-    }
-    collection.upsert(payload)
-
-    console.log(`Upserting to ditto: [${counter}]`, payload)
-}
-
 async function main() {
     await init()
     console.log('Starting cod-polaris-m1...')
@@ -80,6 +52,7 @@ async function main() {
             console.log(`Login requested`)
         },
         authenticationExpiringSoon: function (
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
             authenticator: Authenticator,
             secondsRemaining: number
         ) {
@@ -151,14 +124,17 @@ async function main() {
         }
     })
 
-    // Basic Ditto collection and subscription
-    const collection = ditto.store.collection('TAK_Markers')
-
     // Wait five seconds at start to try and find BLE peers before writing docs
     await sleep(5000)
 
-    // Do the thing
-    setInterval(() => doOnInterval(ditto, collection), interval)
+    const producer = new Producer(ditto, DEFAULT_COLLECTION)
+
+    // Begin test...
+    await producer.start(DEFAULT_MSG_INTERVAL)
+    await sleep(DEFAULT_TEST_DURATION_SEC * 1000)
+    const stats = await producer.stop()
+
+    console.log(`Producer wrote ${stats.records} records (upserts)`)
 }
 
 main()
