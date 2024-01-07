@@ -118,7 +118,8 @@ async function main() {
         }
     }
 
-    const ditto = new Ditto(identity, './ditto')
+    const persistDir = mode == Mode.Producer ? './ditto-p' : './ditto-c'
+    const ditto = new Ditto(identity, persistDir)
 
     if (bpaUrl == 'NA' || bpaUrl == 'offline') {
         console.debug('--> Setting offline only license..')

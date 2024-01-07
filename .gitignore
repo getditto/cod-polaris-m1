@@ -2,3 +2,5 @@ node_modules/
 dist/
 index.js
 config.json
+ditto-p/
+ditto-c/
