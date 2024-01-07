@@ -12,6 +12,7 @@ import {
     DEFAULT_TEST_DURATION_SEC,
 } from './default'
 import { Producer } from './producer'
+import assert from 'assert'
 
 process.once('SIGINT', async () => {
     try {
@@ -34,9 +35,31 @@ function sleep(ms: number) {
     })
 }
 
+function usage() {
+    console.log('Usage: node index.js [produce | consume]')
+}
+
+enum Mode {
+    Producer,
+    Consumer,
+}
+
 async function main() {
+    let mode: Mode | null = null
+    if (process.argv.length == 3) {
+        if (process.argv[2] == 'produce') {
+            mode = Mode.Producer
+        } else if (process.argv[2] == 'consume') {
+            mode = Mode.Consumer
+        }
+    }
+    if (mode == null) {
+        usage()
+        return
+    }
+
     await init()
-    console.log('Starting cod-polaris-m1...')
+    console.log(`Starting cod-polaris-m1 (${process.argv[2]})...`)
 
     const config = new Config('./config.json')
 
@@ -136,11 +159,15 @@ async function main() {
     const producer = new Producer(ditto, DEFAULT_COLLECTION)
 
     // Begin test...
-    await producer.start(DEFAULT_MSG_INTERVAL)
-    await sleep(DEFAULT_TEST_DURATION_SEC * 1000)
-    const stats = await producer.stop()
-
-    console.log(`Producer wrote ${stats.records} records (upserts)`)
+    if (mode == Mode.Producer) {
+        await producer.start(DEFAULT_MSG_INTERVAL)
+        await sleep(DEFAULT_TEST_DURATION_SEC * 1000)
+        const stats = await producer.stop()
+        console.log(`Producer wrote ${stats.records} records (upserts)`)
+    } else {
+        assert(mode == Mode.Consumer)
+        console.log('XXX TODO implement consumer')
+    }
 }
 
 main()
