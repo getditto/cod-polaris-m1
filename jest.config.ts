@@ -6,7 +6,7 @@
 import type { Config } from 'jest'
 
 const config: Config = {
-    // Just defaults for now
+    testMatch: ['**/*.test.js'],
 }
 
 export default config
