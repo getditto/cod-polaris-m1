@@ -192,7 +192,7 @@ async function main() {
         const stats = await consumer.stop()
         console.log(`Consumer read ${stats.uniqueRecords} unique records`)
     }
-    await ditto.stopSync()
+    ditto.stopSync()
 }
 
 main()
