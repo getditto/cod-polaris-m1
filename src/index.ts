@@ -180,7 +180,7 @@ async function main() {
             imgConfig
         )
         await producer.start(DEFAULT_MSG_INTERVAL)
-        await sleep(DEFAULT_TEST_DURATION_SEC * 1000)
+        await sleep(parseInt(config.getStr('TEST_DURATION_SEC')) * 1000)
         const stats = await producer.stop()
         console.log(`Producer wrote ${stats.records} records (upserts)`)
     } else {

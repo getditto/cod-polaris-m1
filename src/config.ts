@@ -1,6 +1,7 @@
 import { strict as assert } from 'assert'
 import { existsSync } from 'fs'
 import nconf from 'nconf'
+import { DEFAULT_TEST_DURATION_SEC } from './default'
 
 export class Config {
     // Add defaults here (by type)
@@ -15,6 +16,7 @@ export class Config {
     strDefaults: Map<string, string | null> = new Map([
         ['ditto:img-height', '1080'],
         ['ditto:img-width', '1920'],
+        ['ditto:test-duration-sec', DEFAULT_TEST_DURATION_SEC.toString()],
     ])
 
     // Add all shouty keys here
@@ -27,6 +29,7 @@ export class Config {
         'BPA_URL',
         'IMG_HEIGHT',
         'IMG_WIDTH',
+        'TEST_DURATION_SEC',
     ]
 
     toConfKey(appKey: string): string {
