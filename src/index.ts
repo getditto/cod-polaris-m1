@@ -7,25 +7,13 @@ import {
     TransportConfig,
     DocumentID,
 } from '@dittolive/ditto'
-import {
-    DEFAULT_COLLECTION,
-    DEFAULT_MSG_INTERVAL,
-    DEFAULT_TEST_DURATION_SEC,
-} from './default'
+import { DEFAULT_COLLECTION, DEFAULT_MSG_INTERVAL } from './default'
 import { Producer } from './producer'
 import assert from 'assert'
 import { v4 as uuidv4 } from 'uuid'
 import { Consumer } from './consumer'
 import { ImageConfig } from './camera'
-
-process.once('SIGINT', async () => {
-    try {
-        await sleep(500)
-    } finally {
-        console.log('SIGINT received...')
-        process.exit(0)
-    }
-})
+import { signalOrTimeout } from './util'
 
 // Random number generator for fake data
 //function randomIntFromInterval(min: number, max: number) { // min and max included
@@ -164,6 +152,14 @@ async function main() {
     const docId = new DocumentID(uuidv4())
 
     // Begin test...
+    let seconds = parseInt(config.getStr('TEST_DURATION_SEC'))
+    if (seconds > 0) {
+        console.info(`--> Running test for ${seconds} seconds..`)
+    } else {
+        console.info('--> Running test indefinitely..')
+    }
+
+    let signal: boolean = false
     if (mode == Mode.Producer) {
         const wantImg = config.getBool('PRODUCE_IMAGES')
         let imgConfig: ImageConfig | null = null
@@ -180,7 +176,7 @@ async function main() {
             imgConfig
         )
         await producer.start(DEFAULT_MSG_INTERVAL)
-        await sleep(parseInt(config.getStr('TEST_DURATION_SEC')) * 1000)
+        signal = await signalOrTimeout(1000 * seconds)
         const stats = await producer.stop()
         console.log(`Producer wrote ${stats.records} records (upserts)`)
     } else {
@@ -188,9 +184,15 @@ async function main() {
         const consumer = new Consumer(ditto, DEFAULT_COLLECTION, docId)
         await consumer.start()
         // since we don't coordinate start time, add 5 extra secs for consumer
-        await sleep((DEFAULT_TEST_DURATION_SEC + 5) * 1000)
+        if (seconds > 0) {
+            seconds += 5
+        }
+        signal = await signalOrTimeout(1000 * seconds)
         const stats = await consumer.stop()
         console.log(`Consumer read ${stats.uniqueRecords} unique records`)
+    }
+    if (signal) {
+        console.info('Exiting due to signal..')
     }
     ditto.stopSync()
 }

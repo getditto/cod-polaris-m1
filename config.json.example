@@ -9,11 +9,13 @@
     "use_ble": true,
     "bpa-url": "portal",
 
-    "comment": "The following are defaults if you omit the values",
+    "// comment": "The following are defaults if you omit the values",
 
     "produce-images": false,
     "img-height": "1080",
     "img-width": "1920",
+
+    "// comment2": "Use 0 to run forever (until SIGINT)",
     "test-duration-sec": "60"
   }
 }
