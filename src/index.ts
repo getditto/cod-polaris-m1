@@ -2,19 +2,20 @@ import { Config } from './config'
 import {
     init,
     Authenticator,
-    Collection,
     Ditto,
     Identity,
     TransportConfig,
+    DocumentID,
 } from '@dittolive/ditto'
+import {
+    DEFAULT_COLLECTION,
+    DEFAULT_MSG_INTERVAL,
+    DEFAULT_TEST_DURATION_SEC,
+} from './default'
+import { Producer } from './producer'
+import assert from 'assert'
 import { v4 as uuidv4 } from 'uuid'
-
-
-const interval = 2000 // 1000ms or 1Hz
-let counter = 0
-
-//const startTime: number = Date.now();
-
+import { Consumer } from './consumer'
 
 process.once('SIGINT', async () => {
     try {
@@ -37,37 +38,31 @@ function sleep(ms: number) {
     })
 }
 
-const dID = uuidv4()
-
-// This is the Ditto doc generator
-function doOnInterval(ditto: Ditto, collection: Collection) {
-    counter += 1
-
-    //  const currentTime: number = startTime + (interval * speed * counter); // Current time after 1 hour (milliseconds)
-
-    const siteID = `${ditto.siteID}`
-    console.log(`SITE ID: ${siteID}`)
-    // This is just enough fake data
-    const payload = {
-        _id: dID,
-        title: 'cod-polaris-m1',
-        description: 'test marker',
-        timestamp: Date.now(),
-        nodeId: 'alpha',
-        state: 'published',
-        isRemoved: false,
-        siteId: siteID,
-        timeMillis: Date.now() + 0.001,
-    }
-    collection.upsert(payload)
-
-    console.log(`Upserting to ditto: [${counter}]`, payload)
+function usage() {
+    console.log('Usage: node index.js [produce | consume]')
 }
 
+enum Mode {
+    Producer,
+    Consumer,
+}
 
 async function main() {
+    let mode: Mode | null = null
+    if (process.argv.length == 3) {
+        if (process.argv[2] == 'produce') {
+            mode = Mode.Producer
+        } else if (process.argv[2] == 'consume') {
+            mode = Mode.Consumer
+        }
+    }
+    if (mode == null) {
+        usage()
+        return
+    }
+
     await init()
-    console.log('Starting cod-polaris-m1...')
+    console.log(`Starting cod-polaris-m1 (${process.argv[2]})...`)
 
     const config = new Config('./config.json')
 
@@ -83,6 +78,7 @@ async function main() {
             console.log(`Login requested`)
         },
         authenticationExpiringSoon: function (
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
             authenticator: Authenticator,
             secondsRemaining: number
         ) {
@@ -107,6 +103,11 @@ async function main() {
             appID: appId,
             token: config.getStr('APP_TOKEN'),
         }
+    } else if (bpaUrl == 'offline') {
+        identity = {
+            type: 'offlinePlayground',
+            appID: config.getStr('APP_ID'),
+        }
     } else {
         identity = {
             type: 'onlineWithAuthentication',
@@ -117,9 +118,11 @@ async function main() {
         }
     }
 
-    const ditto = new Ditto(identity, './ditto')
+    const persistDir = mode == Mode.Producer ? './ditto-p' : './ditto-c'
+    const ditto = new Ditto(identity, persistDir)
 
-    if (bpaUrl == 'NA') {
+    if (bpaUrl == 'NA' || bpaUrl == 'offline') {
+        console.debug('--> Setting offline only license..')
         ditto.setOfflineOnlyLicenseToken(config.getStr('OFFLINE_TOKEN'))
     }
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -154,14 +157,42 @@ async function main() {
         }
     })
 
-    // Basic Ditto collection and subscription
-    const collection = ditto.store.collection('TAK_Markers')
-
     // Wait five seconds at start to try and find BLE peers before writing docs
     await sleep(5000)
 
-    // Do the thing
-    setInterval(() => doOnInterval(ditto, collection), interval)
+    const docId = new DocumentID(uuidv4())
+
+    // Begin test...
+    if (mode == Mode.Producer) {
+        const producer = new Producer(
+            ditto,
+            DEFAULT_COLLECTION,
+            docId,
+            config.getBool('PRODUCE_IMAGES')
+        )
+        await producer.start(DEFAULT_MSG_INTERVAL)
+        await sleep(DEFAULT_TEST_DURATION_SEC * 1000)
+        const stats = await producer.stop()
+        console.log(`Producer wrote ${stats.records} records (upserts)`)
+    } else {
+        assert(mode == Mode.Consumer)
+        const consumer = new Consumer(ditto, DEFAULT_COLLECTION, docId)
+        await consumer.start()
+        // since we don't coordinate start time, add 5 extra secs for consumer
+        await sleep((DEFAULT_TEST_DURATION_SEC + 5) * 1000)
+        const stats = await consumer.stop()
+        console.log(`Consumer read ${stats.uniqueRecords} unique records`)
+    }
+    await ditto.stopSync()
 }
 
 main()
+    .then(() => {
+        console.debug('main() done')
+        // XXX not sure why we don't shut down automatically
+        process.exit()
+    })
+    .catch((e) => {
+        console.error(`main() error: ${e}`)
+        throw e
+    })

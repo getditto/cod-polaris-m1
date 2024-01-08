@@ -3,7 +3,6 @@ import { existsSync } from 'fs'
 import nconf from 'nconf'
 
 export class Config {
-
     // Add defaults here (by type)
     // TODO test this is subset of keys
     boolDefaults: Map<string, boolean | null> = new Map([
@@ -16,11 +15,11 @@ export class Config {
     strDefaults: Map<string, string | null> = new Map([])
 
     // Add all shouty keys here
-    boolKeys = ['USE_CLOUD', 'USE_LAN', 'USE_BLE']
+    boolKeys = ['USE_CLOUD', 'USE_LAN', 'USE_BLE', 'PRODUCE_IMAGES']
     strKeys = ['APP_ID', 'APP_TOKEN', 'OFFLINE_TOKEN', 'SHARED_KEY', 'BPA_URL']
 
     toConfKey(appKey: string): string {
-        return "ditto:" + appKey.toLowerCase().replace(/_/g, '-')
+        return 'ditto:' + appKey.toLowerCase().replace(/_/g, '-')
     }
 
     asBoolean(value: boolean | string | number): boolean {
@@ -44,5 +43,3 @@ export class Config {
         return nconf.get(confKey) || this.boolDefaults.get(confKey) || false
     }
 }
-
-
