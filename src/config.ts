@@ -12,11 +12,22 @@ export class Config {
     ])
 
     // Anything missing will be replaced with empty string
-    strDefaults: Map<string, string | null> = new Map([])
+    strDefaults: Map<string, string | null> = new Map([
+        ['ditto:img-height', '1080'],
+        ['ditto:img-width', '1920'],
+    ])
 
     // Add all shouty keys here
     boolKeys = ['USE_CLOUD', 'USE_LAN', 'USE_BLE', 'PRODUCE_IMAGES']
-    strKeys = ['APP_ID', 'APP_TOKEN', 'OFFLINE_TOKEN', 'SHARED_KEY', 'BPA_URL']
+    strKeys = [
+        'APP_ID',
+        'APP_TOKEN',
+        'OFFLINE_TOKEN',
+        'SHARED_KEY',
+        'BPA_URL',
+        'IMG_HEIGHT',
+        'IMG_WIDTH',
+    ]
 
     toConfKey(appKey: string): string {
         return 'ditto:' + appKey.toLowerCase().replace(/_/g, '-')

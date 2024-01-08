@@ -8,6 +8,11 @@
     "use_lan": true,
     "use_ble": true,
     "bpa-url": "portal",
-    "produce-images": false
+
+    "comment": "The following are defaults if you omit the values",
+
+    "produce-images": false,
+    "img-height": "1080",
+    "img-width": "1920"
   }
 }

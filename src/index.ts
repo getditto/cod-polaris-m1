@@ -16,6 +16,7 @@ import { Producer } from './producer'
 import assert from 'assert'
 import { v4 as uuidv4 } from 'uuid'
 import { Consumer } from './consumer'
+import { ImageConfig } from './camera'
 
 process.once('SIGINT', async () => {
     try {
@@ -164,11 +165,19 @@ async function main() {
 
     // Begin test...
     if (mode == Mode.Producer) {
+        const wantImg = config.getBool('PRODUCE_IMAGES')
+        let imgConfig: ImageConfig | null = null
+        if (wantImg) {
+            const w = parseInt(config.getStr('IMG_WIDTH'))
+            const h = parseInt(config.getStr('IMG_HEIGHT'))
+            imgConfig = new ImageConfig(w, h)
+        }
         const producer = new Producer(
             ditto,
             DEFAULT_COLLECTION,
             docId,
-            config.getBool('PRODUCE_IMAGES')
+            wantImg,
+            imgConfig
         )
         await producer.start(DEFAULT_MSG_INTERVAL)
         await sleep(DEFAULT_TEST_DURATION_SEC * 1000)
