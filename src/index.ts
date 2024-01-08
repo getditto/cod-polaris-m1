@@ -181,7 +181,12 @@ async function main() {
         console.log(`Producer wrote ${stats.records} records (upserts)`)
     } else {
         assert(mode == Mode.Consumer)
-        const consumer = new Consumer(ditto, DEFAULT_COLLECTION, docId)
+        const consumer = new Consumer(
+            ditto,
+            DEFAULT_COLLECTION,
+            docId,
+            config.getBool('CONSUMER_WEBUI')
+        )
         await consumer.start()
         // since we don't coordinate start time, add 5 extra secs for consumer
         if (seconds > 0) {

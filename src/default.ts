@@ -7,3 +7,4 @@ export const DEFAULT_STATE = 'published'
 
 export const DEFAULT_MSG_INTERVAL = 5000
 export const DEFAULT_TEST_DURATION_SEC = 30
+export const DEFAULT_WEBUI_PORT = 8080

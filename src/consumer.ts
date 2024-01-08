@@ -6,6 +6,8 @@ import {
     DocumentID,
     Subscription,
 } from '@dittolive/ditto'
+import { DEFAULT_WEBUI_PORT } from './default'
+import Fastify, { FastifyInstance } from 'fastify'
 
 export interface ConsumerStats {
     uniqueRecords: number
@@ -21,8 +23,15 @@ export class Consumer {
     lastTs: number | null
     uniqueCount: number
     imagesFetched: number
+    webUi: boolean
+    fastify: FastifyInstance | null
 
-    constructor(ditto: Ditto, collName: string, docId: DocumentID) {
+    constructor(
+        ditto: Ditto,
+        collName: string,
+        docId: DocumentID,
+        webUi: boolean
+    ) {
         this.ditto = ditto
         this.collName = collName
         this.docId = docId // XXX currently unused
@@ -31,9 +40,16 @@ export class Consumer {
         this.lastTs = null
         this.uniqueCount = 0
         this.imagesFetched = 0
+        this.webUi = webUi
+        this.fastify = null
     }
 
     async start(): Promise<void> {
+        await this.startConsumer()
+        return this.startWebUI()
+    }
+
+    async startConsumer(): Promise<void> {
         this.coll = this.ditto.store.collection(this.collName)
         const query = this.coll.findAll()
         this.subs = query.subscribe()
@@ -69,11 +85,46 @@ export class Consumer {
         })
     }
 
+    /* XXX
+    async handleWebGet(request, response ): Promise<void> {
+    }
+    */
+
+    async startWebUI(): Promise<void> {
+        console.info(`--> Starting web UI on port ${DEFAULT_WEBUI_PORT}`)
+        this.fastify = Fastify({ logger: true })
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        this.fastify.get('/', async (_req, rep) => {
+            rep.send({ hello: 'world' })
+        })
+
+        const start = async () => {
+            try {
+                await this.fastify!.listen({ port: DEFAULT_WEBUI_PORT })
+            } catch (err) {
+                this.fastify!.log.error(err)
+                process.exit(1)
+            }
+        }
+        start()
+    }
+
     async stop(): Promise<ConsumerStats> {
+        if (this.webUi) {
+            await this.stopWebUI()
+        }
+        return this.stopConsumer()
+    }
+
+    async stopConsumer(): Promise<ConsumerStats> {
         this.subs!.cancel()
         return {
             uniqueRecords: this.uniqueCount,
             imagesFetched: this.imagesFetched,
         }
+    }
+
+    async stopWebUI(): Promise<void> {
+        console.info('--> Stopping web UI')
     }
 }

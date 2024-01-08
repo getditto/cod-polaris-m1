@@ -10,6 +10,7 @@ export class Config {
         ['ditto:use-cloud', true],
         ['ditto:use-lan', true],
         ['ditto:use-ble', true],
+        ['ditto:consumer-webui', true],
     ])
 
     // Anything missing will be replaced with empty string
@@ -20,7 +21,13 @@ export class Config {
     ])
 
     // Add all shouty keys here
-    boolKeys = ['USE_CLOUD', 'USE_LAN', 'USE_BLE', 'PRODUCE_IMAGES']
+    boolKeys = [
+        'USE_CLOUD',
+        'USE_LAN',
+        'USE_BLE',
+        'PRODUCE_IMAGES',
+        'CONSUMER_WEBUI',
+    ]
     strKeys = [
         'APP_ID',
         'APP_TOKEN',
