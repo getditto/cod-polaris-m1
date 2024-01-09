@@ -72,10 +72,11 @@ export class Consumer {
             for (const doc of docs) {
                 // XXX what is best way to create a Payload object from DocumentValue?
                 const ts = doc.at('timestamp').value as number
-                if (this.lastTs != ts) {
-                    console.debug(`--> observed local doc w/ ts: ${ts}`)
-                    this.uniqueCount += 1
+                if (this.lastTs == ts) {
+                    continue
                 }
+                console.debug(`--> observed local doc w/ ts: ${ts}`)
+                this.uniqueCount += 1
 
                 const tok = doc.at('image').attachmentToken
                 if (tok != null) {
