@@ -53,7 +53,7 @@ export class Camera {
             filename = `${this.saveDir}/${this.shortUUID()}.jpg`
         }
         const [w, h] = [this.imgConfig.width, this.imgConfig.height]
-        const cmd = `${this.rpiCmd} --hdr=off --width=${w} --height=${h} -t 1sec -o ${filename}`
+        const cmd = `${this.rpiCmd} --hdr=off --width=${w} --height=${h} -t 1000 -o ${filename}`
         console.debug(`--> Executing: ${cmd}`)
         const ep = new ExecPromise(cmd)
         await ep.exec()
