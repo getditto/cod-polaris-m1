@@ -6,7 +6,7 @@ import {
     DEFAULT_TITLE,
 } from './default'
 import { Payload } from './types'
-import { Camera } from './camera'
+import { Camera, ImageConfig } from './camera'
 import { rmSync } from 'fs'
 
 export interface ProducerStats {
@@ -28,7 +28,8 @@ export class Producer {
         ditto: Ditto,
         collName: string,
         docId: DocumentID,
-        wantImages: boolean
+        wantImages: boolean,
+        imgConfig: ImageConfig | null
     ) {
         this.ditto = ditto
         this.collName = collName
@@ -38,7 +39,8 @@ export class Producer {
         this.finished = false
         this.interval = null
         if (wantImages) {
-            this.camera = new Camera()
+            const iconfig = imgConfig || new ImageConfig()
+            this.camera = new Camera(iconfig)
         } else {
             this.camera = null
         }
