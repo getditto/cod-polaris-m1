@@ -7,9 +7,9 @@ export class Config {
     // Add defaults here (by type)
     // TODO test this is subset of keys
     boolDefaults: Map<string, boolean | null> = new Map([
-        ['ditto:use-cloud', true],
-        ['ditto:use-lan', true],
-        ['ditto:use-ble', true],
+        ['ditto:use-cloud', false],
+        ['ditto:use-lan', false],
+        ['ditto:use-ble', false],
         ['ditto:produce-images', true],
         ['ditto:consumer-webui', true],
     ])
