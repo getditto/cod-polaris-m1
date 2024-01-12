@@ -62,11 +62,11 @@ async function main() {
     console.log(`transportConfig: (${transportConfig.peerToPeer})`)
     // }
     const authHandler = {
-        authenticationRequired: async function(authenticator: Authenticator) {
+        authenticationRequired: async function (authenticator: Authenticator) {
             await authenticator.loginWithToken('full_access', 'dummy-provider')
             console.log(`Login requested`)
         },
-        authenticationExpiringSoon: function(
+        authenticationExpiringSoon: function (
             // eslint-disable-next-line @typescript-eslint/no-unused-vars
             authenticator: Authenticator,
             secondsRemaining: number
