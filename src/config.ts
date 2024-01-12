@@ -10,6 +10,7 @@ export class Config {
         ['ditto:use-cloud', true],
         ['ditto:use-lan', true],
         ['ditto:use-ble', true],
+        ['ditto:produce-images', true],
         ['ditto:consumer-webui', true],
     ])
 
