@@ -59,7 +59,7 @@ async function main() {
     const transportConfig = new TransportConfig()
     transportConfig.peerToPeer.bluetoothLE.isEnabled = config.getBool('USE_BLE')
     transportConfig.peerToPeer.lan.isEnabled = config.getBool('USE_LAN')
-
+    console.log(`tansportConfig: (${transportConfig.peerToPeer})`)
     // }
     const authHandler = {
         authenticationRequired: async function (authenticator: Authenticator) {
