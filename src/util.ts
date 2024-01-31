@@ -29,6 +29,13 @@ export async function signalOrTimeout(msec: number): Promise<boolean> {
     })
 }
 
+// Sleeper
+export function sleep(ms: number) {
+    return new Promise((resolve) => {
+        setTimeout(resolve, ms)
+    })
+}
+
 export function deserPayload(doc: Document): Record<string, string> {
     const payload: Payload = defaultPayload
     const fields: Record<string, string> = {}

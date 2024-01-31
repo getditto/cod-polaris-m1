@@ -20,13 +20,6 @@ import { signalOrTimeout, sleep } from './util.js'
 //  return Math.floor(Math.random() * (max - min + 1) + min)
 //}
 
-// Sleeper
-function sleep(ms: number) {
-    return new Promise((resolve) => {
-        setTimeout(resolve, ms)
-    })
-}
-
 function usage() {
     console.log('Usage: node index.js [produce | consume]')
 }
