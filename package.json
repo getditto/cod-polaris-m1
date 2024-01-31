@@ -18,7 +18,7 @@
   "author": "DittoLive",
   "license": "Apache-2.0",
   "dependencies": {
-    "@dittolive/ditto": "^4.5.1-experimental.aarch64-linux.1.aarch64",
+    "@dittolive/ditto": "4.5.2",
     "@fastify/static": "^6.12.0",
     "@types/node": "^20.5.1",
     "fastify": "^4.25.2",
