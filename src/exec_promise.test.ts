@@ -1,4 +1,4 @@
-import { ExecPromise } from './exec_promise'
+import { ExecPromise } from './exec_promise.js'
 
 test('ExecPromise sucess', () => {
     expect.assertions(1)

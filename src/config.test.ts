@@ -1,4 +1,4 @@
-import { Config } from './config'
+import { Config } from './config.js'
 
 test('config get', () => {
     const config = new Config('config.json.example')

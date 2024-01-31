@@ -1,5 +1,5 @@
 // Stringify that handles BigInts
-import { Payload, defaultPayload } from './types'
+import { Payload, defaultPayload } from './types.js'
 import { Document } from '@dittolive/ditto'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any

@@ -1,5 +1,5 @@
 import { execSync } from 'child_process'
-import { ExecPromise } from './exec_promise'
+import { ExecPromise } from './exec_promise.js'
 import assert from 'assert'
 
 // Typescript wrapper for Raspberry Pi camera image acquistion via

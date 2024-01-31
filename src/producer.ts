@@ -4,9 +4,9 @@ import {
     DEFAULT_NODE_ID,
     DEFAULT_STATE,
     DEFAULT_TITLE,
-} from './default'
-import { Payload } from './types'
-import { Camera, ImageConfig } from './camera'
+} from './default.js'
+import { Payload } from './types.js'
+import { Camera, ImageConfig } from './camera.js'
 import { rmSync } from 'fs'
 
 export interface ProducerStats {

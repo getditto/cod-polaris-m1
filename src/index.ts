@@ -1,4 +1,4 @@
-import { Config } from './config'
+import { Config } from './config.js'
 import {
     init,
     Authenticator,
@@ -7,13 +7,13 @@ import {
     TransportConfig,
     DocumentID,
 } from '@dittolive/ditto'
-import { DEFAULT_COLLECTION, DEFAULT_MSG_INTERVAL } from './default'
-import { Producer } from './producer'
+import { DEFAULT_COLLECTION, DEFAULT_MSG_INTERVAL } from './default.js'
+import { Producer } from './producer.js'
 import assert from 'assert'
 import { v4 as uuidv4 } from 'uuid'
-import { Consumer } from './consumer'
-import { ImageConfig } from './camera'
-import { signalOrTimeout } from './util'
+import { Consumer } from './consumer.js'
+import { ImageConfig } from './camera.js'
+import { signalOrTimeout, sleep } from './util.js'
 
 // Random number generator for fake data
 //function randomIntFromInterval(min: number, max: number) { // min and max included

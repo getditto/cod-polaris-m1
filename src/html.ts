@@ -1,4 +1,4 @@
-import { DEFAULT_WEBUI_REFRESH_SEC } from './default'
+import { DEFAULT_WEBUI_REFRESH_SEC } from './default.js'
 
 function renderFields(fields: Record<string, string>): string {
     let html = ''

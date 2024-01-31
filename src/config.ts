@@ -1,7 +1,7 @@
 import { strict as assert } from 'assert'
 import { existsSync } from 'fs'
 import nconf from 'nconf'
-import { DEFAULT_TEST_DURATION_SEC } from './default'
+import { DEFAULT_TEST_DURATION_SEC } from './default.js'
 
 export class Config {
     // Add defaults here (by type)
