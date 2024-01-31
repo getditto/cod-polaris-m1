@@ -12,6 +12,7 @@ import { existsSync, mkdirSync } from 'fs'
 import fastifyStatic from '@fastify/static'
 import { pageWithImage } from './html'
 import path from 'path'
+import { deserPayload } from './util'
 
 export interface ConsumerStats {
     uniqueRecords: number
@@ -29,8 +30,9 @@ export class Consumer {
     imagesFetched: number
     webUi: boolean
     fastify: FastifyInstance | null
-    lastImage: string | null
     imagePath: string
+    lastImage: string | null
+    lastFields: Record<string, string>
 
     constructor(
         ditto: Ditto,
@@ -49,6 +51,7 @@ export class Consumer {
         this.webUi = webUi
         this.fastify = null
         this.lastImage = null
+        this.lastFields = {}
         this.imagePath = '/tmp/images'
         // ensure dir exists
         if (!existsSync(this.imagePath)) {
@@ -93,6 +96,7 @@ export class Consumer {
                         console.debug(`--> writing ${outfile}..`)
                         await attach!.copyToPath(outfile)
                         this.lastImage = outfile
+                        this.lastFields = deserPayload(doc)
                     }
                 }
             }
@@ -114,7 +118,7 @@ export class Consumer {
             if (this.lastImage != null) {
                 webPath = path.join('/img', path.basename(this.lastImage))
             }
-            rep.type('text/html').send(pageWithImage(webPath))
+            rep.type('text/html').send(pageWithImage(webPath, this.lastFields))
         })
 
         const start = async () => {

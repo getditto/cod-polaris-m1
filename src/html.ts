@@ -1,4 +1,15 @@
-export function pageWithImage(imagePath: string | null): string {
+function renderFields(fields: Record<string, string>): string {
+    let html = ''
+    for (const key in fields) {
+        html += `<div>${key}: ${fields[key]}</div>`
+    }
+    return html
+}
+
+export function pageWithImage(
+    imagePath: string | null,
+    fields: Record<string, string>
+): string {
     let html = `<!DOCTYPE html>
 <html lang="en">
   <head>
@@ -26,6 +37,7 @@ export function pageWithImage(imagePath: string | null): string {
         html += `<div>No image yet...</div>
 `
     }
+    html += renderFields(fields)
     html += `  </body>
 </html>`
 
