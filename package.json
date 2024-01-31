@@ -5,6 +5,7 @@
   "scripts": {
     "build": "tsc",
     "start": "tsc && node dist/index.js",
+    "start-peer": "tsc && node dist/cmesh_peer.js",
     "test": "jest",
     "lint": "eslint . --ext .ts && prettier --check .",
     "lint-fix": "eslint . --ext .ts --fix",
