@@ -25,7 +25,7 @@ export class Consumer {
     docId: DocumentID
     subs: Subscription | null
     coll: Collection | null
-    lastTs: number | null
+    lastTs: number
     uniqueCount: number
     imagesFetched: number
     webUi: boolean
@@ -45,7 +45,7 @@ export class Consumer {
         this.docId = docId // XXX currently unused
         this.subs = null
         this.coll = null
-        this.lastTs = null
+        this.lastTs = 0
         this.uniqueCount = 0
         this.imagesFetched = 0
         this.webUi = webUi
@@ -75,7 +75,7 @@ export class Consumer {
             for (const doc of docs) {
                 // XXX what is best way to create a Payload object from DocumentValue?
                 const ts = doc.at('timestamp').value as number
-                if (this.lastTs == ts) {
+                if (this.lastTs >= ts) {
                     continue
                 }
                 console.debug(`--> observed local doc w/ ts: ${ts}`)
