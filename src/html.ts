@@ -1,3 +1,5 @@
+import { DEFAULT_WEBUI_REFRESH_SEC } from './default'
+
 function renderFields(fields: Record<string, string>): string {
     let html = ''
     for (const key in fields) {
@@ -16,6 +18,7 @@ export function pageWithImage(
     <meta charset="utf-8" />
     <title>cod-polaris-m1</title>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta http-equiv="refresh" content="${DEFAULT_WEBUI_REFRESH_SEC}">
     <style>
     body {
       background-color: #000000;
