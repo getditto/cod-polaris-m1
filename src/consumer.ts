@@ -12,6 +12,7 @@ import { existsSync, mkdirSync } from 'fs'
 import fastifyStatic from '@fastify/static'
 import { pageWithImage } from './html'
 import path from 'path'
+import { deserPayload } from './util'
 
 export interface ConsumerStats {
     uniqueRecords: number
@@ -24,13 +25,14 @@ export class Consumer {
     docId: DocumentID
     subs: Subscription | null
     coll: Collection | null
-    lastTs: number | null
+    lastTs: number
     uniqueCount: number
     imagesFetched: number
     webUi: boolean
     fastify: FastifyInstance | null
-    lastImage: string | null
     imagePath: string
+    lastImage: string | null
+    lastFields: Record<string, string>
 
     constructor(
         ditto: Ditto,
@@ -43,12 +45,13 @@ export class Consumer {
         this.docId = docId // XXX currently unused
         this.subs = null
         this.coll = null
-        this.lastTs = null
+        this.lastTs = 0
         this.uniqueCount = 0
         this.imagesFetched = 0
         this.webUi = webUi
         this.fastify = null
         this.lastImage = null
+        this.lastFields = {}
         this.imagePath = '/tmp/images'
         // ensure dir exists
         if (!existsSync(this.imagePath)) {
@@ -72,7 +75,7 @@ export class Consumer {
             for (const doc of docs) {
                 // XXX what is best way to create a Payload object from DocumentValue?
                 const ts = doc.at('timestamp').value as number
-                if (this.lastTs == ts) {
+                if (this.lastTs >= ts) {
                     continue
                 }
                 console.debug(`--> observed local doc w/ ts: ${ts}`)
@@ -93,6 +96,7 @@ export class Consumer {
                         console.debug(`--> writing ${outfile}..`)
                         await attach!.copyToPath(outfile)
                         this.lastImage = outfile
+                        this.lastFields = deserPayload(doc)
                     }
                 }
             }
@@ -114,7 +118,7 @@ export class Consumer {
             if (this.lastImage != null) {
                 webPath = path.join('/img', path.basename(this.lastImage))
             }
-            rep.type('text/html').send(pageWithImage(webPath))
+            rep.type('text/html').send(pageWithImage(webPath, this.lastFields))
         })
 
         const start = async () => {

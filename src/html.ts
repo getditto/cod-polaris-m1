@@ -1,10 +1,24 @@
-export function pageWithImage(imagePath: string | null): string {
+import { DEFAULT_WEBUI_REFRESH_SEC } from './default'
+
+function renderFields(fields: Record<string, string>): string {
+    let html = ''
+    for (const key in fields) {
+        html += `<div>${key}: ${fields[key]}</div>`
+    }
+    return html
+}
+
+export function pageWithImage(
+    imagePath: string | null,
+    fields: Record<string, string>
+): string {
     let html = `<!DOCTYPE html>
 <html lang="en">
   <head>
     <meta charset="utf-8" />
     <title>cod-polaris-m1</title>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta http-equiv="refresh" content="${DEFAULT_WEBUI_REFRESH_SEC}">
     <style>
     body {
       background-color: #000000;
@@ -26,6 +40,7 @@ export function pageWithImage(imagePath: string | null): string {
         html += `<div>No image yet...</div>
 `
     }
+    html += renderFields(fields)
     html += `  </body>
 </html>`
 
