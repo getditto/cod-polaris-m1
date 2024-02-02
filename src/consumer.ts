@@ -6,13 +6,13 @@ import {
     DocumentID,
     Subscription,
 } from '@dittolive/ditto'
-import { DEFAULT_WEBUI_PORT } from './default'
+import { DEFAULT_WEBUI_PORT } from './default.js'
 import Fastify, { FastifyInstance } from 'fastify'
 import { existsSync, mkdirSync } from 'fs'
 import fastifyStatic from '@fastify/static'
-import { pageWithImage } from './html'
+import { pageWithImage } from './html.js'
 import path from 'path'
-import { deserPayload } from './util'
+import { deserPayload } from './util.js'
 
 export interface ConsumerStats {
     uniqueRecords: number

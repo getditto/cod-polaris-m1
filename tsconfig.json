@@ -9,5 +9,6 @@
     "sourceMap": true,
     "stripInternal": true
   },
-  "include": ["src/**/*ts"]
+  "include": ["src/**/*ts"],
+  "exclude": ["src/cmesh_peer.ts"]
 }

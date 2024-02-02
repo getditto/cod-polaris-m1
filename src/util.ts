@@ -1,5 +1,5 @@
 // Stringify that handles BigInts
-import { Payload, defaultPayload } from './types'
+import { Payload, defaultPayload } from './types.js'
 import { Document } from '@dittolive/ditto'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -26,6 +26,13 @@ export async function signalOrTimeout(msec: number): Promise<boolean> {
             }
             resolve(true)
         })
+    })
+}
+
+// Sleeper
+export function sleep(ms: number) {
+    return new Promise((resolve) => {
+        setTimeout(resolve, ms)
     })
 }
 
