@@ -1,12 +1,5 @@
 import { Config } from './config.js'
-import {
-    init,
-    Authenticator,
-    Ditto,
-    Identity,
-    TransportConfig,
-    DocumentID,
-} from '@dittolive/ditto'
+import { DocumentID } from '@dittolive/ditto'
 import { DEFAULT_COLLECTION, DEFAULT_MSG_INTERVAL } from './default.js'
 import { Producer } from './producer.js'
 import assert from 'assert'
@@ -14,11 +7,7 @@ import { v4 as uuidv4 } from 'uuid'
 import { Consumer } from './consumer.js'
 import { ImageConfig } from './camera.js'
 import { signalOrTimeout, sleep } from './util.js'
-
-// Random number generator for fake data
-//function randomIntFromInterval(min: number, max: number) { // min and max included
-//  return Math.floor(Math.random() * (max - min + 1) + min)
-//}
+import { DittoCOD } from './ditto_cod.js'
 
 function usage() {
     console.log('Usage: node index.js [produce | consume]')
@@ -43,91 +32,15 @@ async function main() {
         return
     }
 
-    await init()
-    console.log(`Starting cod-polaris-m1 (${process.argv[2]})...`)
-
     const config = new Config('./config.json')
-
-    // We're testing BLE here
-    const transportConfig = new TransportConfig()
-    transportConfig.peerToPeer.bluetoothLE.isEnabled = config.getBool('USE_BLE')
-    transportConfig.peerToPeer.lan.isEnabled = config.getBool('USE_LAN')
-    console.log(`transportConfig: `, transportConfig.peerToPeer)
-    // }
-    const authHandler = {
-        authenticationRequired: async function (authenticator: Authenticator) {
-            await authenticator.loginWithToken('full_access', 'dummy-provider')
-            console.log(`Login requested`)
-        },
-        authenticationExpiringSoon: function (
-            // eslint-disable-next-line @typescript-eslint/no-unused-vars
-            authenticator: Authenticator,
-            secondsRemaining: number
-        ) {
-            console.log(`Auth token expiring in ${secondsRemaining} seconds`)
-        },
-    }
-    const bpaUrl = config.getStr('BPA_URL')
-    const appId = config.getStr('APP_ID')
-    console.log(`BPA_URL: ${bpaUrl}`)
-
-    let identity: Identity
-    // TODO use empty string instead of NA?
-    if (bpaUrl == 'NA') {
-        identity = {
-            type: 'sharedKey',
-            appID: appId,
-            sharedKey: config.getStr('SHARED_KEY'),
-        }
-    } else if (bpaUrl == 'portal') {
-        identity = {
-            type: 'onlinePlayground',
-            appID: appId,
-            token: config.getStr('APP_TOKEN'),
-        }
-    } else if (bpaUrl == 'offline') {
-        identity = {
-            type: 'offlinePlayground',
-            appID: config.getStr('APP_ID'),
-        }
-    } else {
-        identity = {
-            type: 'onlineWithAuthentication',
-            appID: config.getStr('APP_ID'),
-            enableDittoCloudSync: false,
-            authHandler: authHandler,
-            customAuthURL: bpaUrl,
-        }
-    }
-
     const persistDir = mode == Mode.Producer ? './ditto-p' : './ditto-c'
-    const ditto = new Ditto(identity, persistDir)
 
-    if (bpaUrl == 'NA' || bpaUrl == 'offline') {
-        console.debug('--> Setting offline only license..')
-        ditto.setOfflineOnlyLicenseToken(config.getStr('OFFLINE_TOKEN'))
-    }
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const transportConditionsObserver = ditto.observeTransportConditions(
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        (condition, _source) => {
-            if (condition === 'BLEDisabled') {
-                console.log('BLE disabled')
-            } else if (condition === 'NoBLECentralPermission') {
-                console.log('Permission missing for BLE')
-            } else if (condition === 'NoBLEPeripheralPermission') {
-                console.log('Permissions missing for BLE')
-            }
-        }
-    )
-
-    ditto.setTransportConfig(transportConfig)
-
-    ditto.startSync()
+    const dittoCod = new DittoCOD(config, persistDir)
+    await dittoCod.start()
 
     // Console out the peers found
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const presenceObserver = ditto.presence.observe((graph) => {
+    const _presenceObserver = dittoCod.ditto!.presence.observe((graph) => {
         if (graph.remotePeers.length != 0) {
             graph.remotePeers.forEach((peer) => {
                 console.log(
@@ -162,7 +75,7 @@ async function main() {
             imgConfig = new ImageConfig(w, h)
         }
         const producer = new Producer(
-            ditto,
+            dittoCod.ditto!,
             DEFAULT_COLLECTION,
             docId,
             wantImg,
@@ -175,7 +88,7 @@ async function main() {
     } else {
         assert(mode == Mode.Consumer)
         const consumer = new Consumer(
-            ditto,
+            dittoCod.ditto!,
             DEFAULT_COLLECTION,
             docId,
             config.getBool('CONSUMER_WEBUI')
@@ -192,7 +105,7 @@ async function main() {
     if (signal) {
         console.info('Exiting due to signal..')
     }
-    ditto.stopSync()
+    dittoCod.stop()
 }
 
 main()
