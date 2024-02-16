@@ -1,4 +1,4 @@
-import { ATR } from './atr.js'
+import { ATR, Model } from './atr.js'
 import { Config } from './config.js'
 
 test('atr start stop', async () => {
@@ -14,5 +14,11 @@ test('atr pollDetection', async () => {
     const atr = new ATR(config)
 
     const result = atr.pollDetection()
+    expect(result).toBeNull
+})
+
+test('Model detectObject', async () => {
+    const model = new Model()
+    const result = model.detectObject()
     expect(result).toBeNull
 })
