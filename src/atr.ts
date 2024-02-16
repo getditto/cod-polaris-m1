@@ -1,4 +1,4 @@
-import { Config } from './config.js';
+import { Config } from './config.js'
 
 export class DetectedObject {
     // blah blah
@@ -7,7 +7,6 @@ export class DetectedObject {
 // TODO
 // this is function calls between boxes, but do we want to use ditto
 export class ATR {
-
     confg: Config
     objectsToReport: DetectedObject[] = []
 
@@ -20,12 +19,10 @@ export class ATR {
         // begin detection loop
     }
 
-    async stop(): Promise<void> {
-    }
+    async stop(): Promise<void> {}
 
     // @private
     async detectionLoop(): Promise<void> {
-
         // grab image
         // run model
         // if no match, return null
@@ -39,6 +36,4 @@ export class ATR {
     async pollDetection(): Promise<DetectedObject | null> {
         return null
     }
-
 }
-
