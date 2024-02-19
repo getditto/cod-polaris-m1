@@ -46,6 +46,6 @@ test('Model detectObject', async () => {
 test('BoxCoordinates getBoxArray', async () => {
     const testArray = [1, 8]
     const coordinates = new BoxCoordinates(1, 8)
-    const result = await coordinates.getBoxArray()
+    const result = coordinates.getBoxArray()
     expect(result).toEqual(testArray)
 })

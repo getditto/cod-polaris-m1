@@ -4,8 +4,6 @@
 name: Typescript CI
 
 on:
-  push:
-    branches: [ "*" ]
   pull_request:
     branches: [ "main" ]
 

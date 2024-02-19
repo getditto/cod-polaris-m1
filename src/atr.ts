@@ -10,7 +10,7 @@ export class BoxCoordinates {
         this.y = y
     }
 
-    async getBoxArray(): Promise<Array<number>> {
+    getBoxArray(): Array<number> {
         return [this.x, this.y]
     }
 }
