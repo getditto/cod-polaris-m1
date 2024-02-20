@@ -24,8 +24,6 @@
     "@types/node": "^20.5.1",
     "fastify": "^4.25.2",
     "nconf": "=0.12.0",
-    "node-gpsd-client": "^1.4.1",
-    "sense-hat-led": "^1.2.0",
     "strip-ansi": "^6.0.1",
     "uuid": "^9.0.1"
   },
