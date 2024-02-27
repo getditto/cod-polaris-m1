@@ -12,7 +12,7 @@ import { existsSync, mkdirSync } from 'fs'
 import fastifyStatic from '@fastify/static'
 import { pageWithImage } from './html.js'
 import path from 'path'
-import { deserPayload } from './util.js'
+import { deserPayload } from './types.js'
 
 export interface ConsumerStats {
     uniqueRecords: number

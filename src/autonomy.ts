@@ -1,6 +1,6 @@
 import { ATR, DetectedObject } from './atr.js'
 import { Config } from './config.js'
-import { sleep } from './util.js'
+import { sleep } from './util/util.js'
 
 enum C2Command {
     START,

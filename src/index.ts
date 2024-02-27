@@ -6,7 +6,7 @@ import assert from 'assert'
 import { v4 as uuidv4 } from 'uuid'
 import { Consumer } from './consumer.js'
 import { ImageConfig } from './camera.js'
-import { signalOrTimeout, sleep } from './util.js'
+import { signalOrTimeout, sleep } from './util/util.js'
 import { DittoCOD } from './ditto_cod.js'
 
 function usage() {
