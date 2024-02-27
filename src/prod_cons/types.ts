@@ -4,7 +4,7 @@ import {
     DEFAULT_NODE_ID,
     DEFAULT_STATE,
     DEFAULT_TITLE,
-} from './default.js'
+} from '../default.js'
 
 export interface Payload {
     _id: DocumentID

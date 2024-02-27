@@ -1,5 +1,26 @@
 # cod-polaris-m1
-Simple Ditto app - representing a COD node
+
+Ditto Common Operational Database (COD) Prototypes
+
+## Apps
+
+*Producer/Consumer*
+
+`src/prod_cons/index.ts` a simple producer/consumer app including metadata and
+sensor (camera) communication and a simple HTTP UI which provides a "webcams
+over Ditto" demo.
+
+*av-cod-server*
+
+`src/av-cod-server/index.ts`
+This is a HTTP to Ditto proxy which is intended to run as a separate process on
+an autonomous vehicle (AV), providing an easy way to integrate multiple other
+processes with a single common operational database (COD) based on the Ditto SDK.
+
+*Test AV*
+
+Work-in-progress test and prototyping support for autonomous vehicle (AV)
+integration experiments.
 
 ## Setup
 
@@ -35,11 +56,13 @@ npm run build
 ```
 ## Running
 
+See (./package.json) for the available `npm` scripts. For example, to run the Producer/Consumer demo:
+
 After you setup the environment variables in `.env` and compile with `tsc`
 (i.e. `npm run build`) you can run the service with:
 
 ```
-npm start
+npm run start-prod-cons
 ```
 
 ## Development

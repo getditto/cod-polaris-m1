@@ -1,13 +1,13 @@
-import { Config } from './config.js'
+import { Config } from '../config.js'
 import { DocumentID } from '@dittolive/ditto'
-import { DEFAULT_COLLECTION, DEFAULT_MSG_INTERVAL } from './default.js'
+import { DEFAULT_COLLECTION, DEFAULT_MSG_INTERVAL } from '../default.js'
 import { Producer } from './producer.js'
 import assert from 'assert'
 import { v4 as uuidv4 } from 'uuid'
 import { Consumer } from './consumer.js'
-import { ImageConfig } from './camera.js'
-import { signalOrTimeout, sleep } from './util/util.js'
-import { DittoCOD } from './ditto_cod.js'
+import { ImageConfig } from '../camera.js'
+import { signalOrTimeout, sleep } from '../util/util.js'
+import { DittoCOD } from '../ditto_cod.js'
 
 function usage() {
     console.log('Usage: node index.js [produce | consume]')
