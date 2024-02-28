@@ -2,6 +2,7 @@ import { strict as assert } from 'assert'
 import { existsSync } from 'fs'
 import nconf from 'nconf'
 import { DEFAULT_TEST_DURATION_SEC } from './default.js'
+import { DittoConfig } from './ditto_cod.js'
 
 export class Config {
     // Add defaults here (by type)
@@ -63,5 +64,17 @@ export class Config {
         assert(this.boolKeys.includes(key))
         const confKey = this.toConfKey(key)
         return nconf.get(confKey) || this.boolDefaults.get(confKey) || false
+    }
+
+    toDittoConfig(): DittoConfig {
+        const dittoConf = new DittoConfig(
+            this.getBool('USE_BLE'),
+            this.getBool('USE_LAN'),
+            this.getStr('APP_ID')
+        )
+        dittoConf.bpUrl = this.getStr('BPA_URL')
+        dittoConf.sharedKey = this.getStr('SHARED_KEY')
+        dittoConf.offlineToken = this.getStr('OFFLINE_TOKEN')
+        return dittoConf
     }
 }

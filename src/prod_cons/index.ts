@@ -33,9 +33,12 @@ async function main() {
     }
 
     const config = new Config('./config.json')
-    const persistDir = mode == Mode.Producer ? './ditto-p' : './ditto-c'
+    const dconfig = config.toDittoConfig()
+    if (dconfig.persistDir == '') {
+        dconfig.persistDir = mode == Mode.Producer ? './ditto-p' : './ditto-c'
+    }
 
-    const dittoCod = new DittoCOD(config, persistDir)
+    const dittoCod = new DittoCOD(dconfig)
     await dittoCod.start()
 
     // Console out the peers found
