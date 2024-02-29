@@ -20,6 +20,7 @@ export class Config {
         ['ditto:persist-dir', './ditto'],
         ['test-duration-sec', DEFAULT_TEST_DURATION_SEC.toString()],
         ['http-port', '8081'],
+        ['http-host', '127.0.0.1'],
     ])
 
     // Add all shouty keys here
@@ -34,6 +35,7 @@ export class Config {
         'IMG_WIDTH',
         'TEST_DURATION_SEC',
         'HTTP_PORT',
+        'HTTP_HOST',
     ]
 
     toConfKey(appKey: string): string {

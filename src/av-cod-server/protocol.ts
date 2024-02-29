@@ -70,6 +70,7 @@ export class v0TrialStart {
     // control serialization
     private toObject(): Record<string, string | number | Geometry> {
         return {
+            version: this.version,
             name: this.name,
             timestamp: this.timestamp.toString(),
             id: this.id.toString(),
@@ -93,8 +94,9 @@ export class v0TrialEnd {
         this.id = id
     }
     // control serialization
-    private toObject(): Record<string, string> {
+    private toObject(): Record<string, string | number> {
         return {
+            version: this.version,
             name: this.name,
             timestamp: this.timestamp.toString(),
             id: this.id.toString(),
@@ -110,7 +112,14 @@ export class v0TrialInit {
     version = 0
     name = 'Init'
     timestamp = new Timestamp()
+    private toObject(): Record<string, string | number> {
+        return {
+            version: this.version,
+            name: this.name,
+            timestamp: this.timestamp.toString(),
+        }
+    }
     serialize(): string {
-        return JSON.stringify(this)
+        return JSON.stringify(this.toObject())
     }
 }
