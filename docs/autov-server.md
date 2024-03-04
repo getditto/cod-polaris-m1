@@ -1,3 +1,5 @@
+__Go back to [COD Overview](./README.md)__
+
 # AutoV COD Server
 Design doc for a HTTP <-> Ditto proxy which acts as an autonomous vehicle's
 common operational database (AutoV COD).
@@ -6,18 +8,36 @@ common operational database (AutoV COD).
 *API Version: 0*
 Initial prototype design for integration testing and feedback.
 
+### Conventions
+Some sections are labeled with a number for easy cross-referencing. For example, the section number:
+
+```
+A.I.1
+```
+
+Specifies a feature on the Autonomy (A) side, which is feature `I.1` within
+that spec. One the base side of the system, an API feature could be numbered
+
+```
+B.IV.3.b
+```
+for example, where `B.` signifies a feature exposed on `base` side of
+operations, and the feature is numbered `IV.3.b` within that section.
+
+Features that are not Autonomy (A) or Base (B)-specific can use other letter
+prefixes such as `C.`, etc.
 
 ## AutoV COD API
 
 The `autov-cod-server` process exposes the following REST API on the configured
 HTTP port, available only to localhost connections by default:
 
-### Start / Stop Trial
+### A.I. Start / Stop Trial
 
 This portion of the API is currently designed to mimic existing APIs, but may be
 modified in future versions.
 
-#### Non-blocking Query
+#### A.I.1 Non-blocking Query
 
 `/api/trial/<trial-id>` - API prefix for a given instance of a trial. Currently
 `<trial-id>` MUST be `0` (zero as integer).
@@ -82,7 +102,7 @@ documents, but they will be igored. For `Trial Start` and `Trial End`, the
 the timestamp will simply be the time the server (AutoV COD) wrote the response
 to the client.
 
-### Blocking Query
+### A.I.2 Blocking Query
 
 `GET /api/trial/0/start`
 `GET /api/trial/0/end`
