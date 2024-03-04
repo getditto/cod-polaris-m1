@@ -3,6 +3,7 @@ import { strict as assert } from 'assert'
 import { existsSync } from 'fs'
 import nconf from 'nconf'
 import { DittoConfig } from '../ditto_cod.js'
+import { HttpConfig } from '../common-cod/http_base.js'
 
 const DEFAULT_TEST_DURATION_SEC = 60
 
@@ -73,5 +74,12 @@ export class Config {
         dittoConf.sharedKey = this.getStr('SHARED_KEY')
         dittoConf.offlineToken = this.getStr('OFFLINE_TOKEN')
         return dittoConf
+    }
+
+    toHttpConfig(): HttpConfig {
+        return new HttpConfig(
+            this.getStr('HTTP_HOST'),
+            parseInt(this.getStr('HTTP_PORT'))
+        )
     }
 }
