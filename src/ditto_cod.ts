@@ -5,34 +5,52 @@ import {
     Identity,
     TransportConfig,
 } from '@dittolive/ditto'
-import { Config } from './config.js'
+
+export class DittoConfig {
+    useBle: boolean
+    useLan: boolean
+    bpUrl: string = ''
+    appId: string
+    sharedKey: string = ''
+    appToken: string = ''
+    offlineToken: string = ''
+    persistDir: string
+
+    constructor(
+        useBle: boolean,
+        useLan: boolean,
+        appId: string,
+        persistDir: string = './ditto'
+    ) {
+        this.useBle = useBle
+        this.useLan = useLan
+        this.appId = appId
+        this.persistDir = persistDir
+    }
+}
 
 export class DittoCOD {
-    config: Config
+    config: DittoConfig
     ditto: Ditto | null
     identity: Identity
     transportConf: TransportConfig
-    persistDir: string
 
-    constructor(config: Config, persistDir: string) {
+    constructor(config: DittoConfig) {
         this.config = config
         this.ditto = null
         this.identity = this.initIdentity()
         this.transportConf = this.initTransport()
-        this.persistDir = persistDir
     }
 
-    // @private
-    initTransport(): TransportConfig {
+    private initTransport(): TransportConfig {
         const tc = new TransportConfig()
-        tc.peerToPeer.bluetoothLE.isEnabled = this.config.getBool('USE_BLE')
-        tc.peerToPeer.lan.isEnabled = this.config.getBool('USE_LAN')
+        tc.peerToPeer.bluetoothLE.isEnabled = this.config.useBle
+        tc.peerToPeer.lan.isEnabled = this.config.useLan
         console.debug('transportConfig: ', tc.peerToPeer)
         return tc
     }
 
-    // @private
-    initIdentity(): Identity {
+    private initIdentity(): Identity {
         const authHandler = {
             authenticationRequired: async function (
                 authenticator: Authenticator
@@ -53,8 +71,8 @@ export class DittoCOD {
                 )
             },
         }
-        const bpaUrl = this.config.getStr('BPA_URL')
-        const appId = this.config.getStr('APP_ID')
+        const bpaUrl = this.config.bpUrl
+        const appId = this.config.appId
         console.log(`BPA_URL: ${bpaUrl}`)
 
         let identity: Identity
@@ -63,23 +81,23 @@ export class DittoCOD {
             identity = {
                 type: 'sharedKey',
                 appID: appId,
-                sharedKey: this.config.getStr('SHARED_KEY'),
+                sharedKey: this.config.sharedKey || '',
             }
         } else if (bpaUrl == 'portal') {
             identity = {
                 type: 'onlinePlayground',
                 appID: appId,
-                token: this.config.getStr('APP_TOKEN'),
+                token: this.config.appToken,
             }
         } else if (bpaUrl == 'offline') {
             identity = {
                 type: 'offlinePlayground',
-                appID: this.config.getStr('APP_ID'),
+                appID: appId,
             }
         } else {
             identity = {
                 type: 'onlineWithAuthentication',
-                appID: this.config.getStr('APP_ID'),
+                appID: appId,
                 enableDittoCloudSync: false,
                 authHandler: authHandler,
                 customAuthURL: bpaUrl,
@@ -92,13 +110,11 @@ export class DittoCOD {
     async start(): Promise<void> {
         await init()
         console.log(`Starting cod-polaris-m1...`)
-        this.ditto = new Ditto(this.identity, this.persistDir)
-        const bpaUrl = this.config.getStr('BPA_URL')
+        this.ditto = new Ditto(this.identity, this.config.persistDir)
+        const bpaUrl = this.config.bpUrl
         if (bpaUrl == 'NA' || bpaUrl == 'offline') {
             console.debug('--> Setting offline only license..')
-            this.ditto.setOfflineOnlyLicenseToken(
-                this.config.getStr('OFFLINE_TOKEN')
-            )
+            this.ditto.setOfflineOnlyLicenseToken(this.config.offlineToken)
         }
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const _transportConditionsObserver =

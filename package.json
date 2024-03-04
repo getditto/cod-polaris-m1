@@ -1,10 +1,11 @@
 {
   "name": "cod-polaris-m1",
-  "description": "Ditto Common Operational Database prototyping app",
+  "description": "Ditto Common Operational Database prototypes",
   "version": "0.0.1",
   "scripts": {
     "build": "tsc",
-    "start": "tsc && node dist/index.js",
+    "start-acs": "tsc && node dist/av-cod-server/index.js",
+    "start-prod-cons": "tsc && node dist/prod_cons/index.js",
     "start-peer": "tsc && node dist/cmesh_peer.js",
     "test": "jest",
     "lint": "eslint . --ext .ts && prettier --check .",

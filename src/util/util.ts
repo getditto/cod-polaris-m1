@@ -1,7 +1,4 @@
 // Stringify that handles BigInts
-import { Payload, defaultPayload } from './types.js'
-import { Document } from '@dittolive/ditto'
-
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function stringify(obj: any): string {
     return JSON.stringify(obj, (_k, v) => {
@@ -34,16 +31,4 @@ export function sleep(ms: number) {
     return new Promise((resolve) => {
         setTimeout(resolve, ms)
     })
-}
-
-export function deserPayload(doc: Document): Record<string, string> {
-    const payload: Payload = defaultPayload
-    const fields: Record<string, string> = {}
-    Object.keys(payload).map((key) => {
-        const val = doc.at(key)
-        if (val != undefined && val != null) {
-            fields[key] = val.value.toString()
-        }
-    })
-    return fields
 }

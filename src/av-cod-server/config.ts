@@ -1,8 +1,10 @@
+// TODO copy-pasta: factor out common w/ ../config.ts
 import { strict as assert } from 'assert'
 import { existsSync } from 'fs'
 import nconf from 'nconf'
-import { DEFAULT_TEST_DURATION_SEC } from './default.js'
-import { DittoConfig } from './ditto_cod.js'
+import { DittoConfig } from '../ditto_cod.js'
+
+const DEFAULT_TEST_DURATION_SEC = 60
 
 export class Config {
     // Add defaults here (by type)
@@ -11,25 +13,18 @@ export class Config {
         ['ditto:use-cloud', false],
         ['ditto:use-lan', false],
         ['ditto:use-ble', false],
-        ['ditto:produce-images', true],
-        ['ditto:consumer-webui', true],
     ])
 
     // Anything missing will be replaced with empty string
     strDefaults: Map<string, string | null> = new Map([
-        ['ditto:img-height', '1080'],
-        ['ditto:img-width', '1920'],
-        ['ditto:test-duration-sec', DEFAULT_TEST_DURATION_SEC.toString()],
+        ['ditto:persist-dir', './ditto'],
+        ['test-duration-sec', DEFAULT_TEST_DURATION_SEC.toString()],
+        ['http-port', '8081'],
+        ['http-host', '127.0.0.1'],
     ])
 
     // Add all shouty keys here
-    boolKeys = [
-        'USE_CLOUD',
-        'USE_LAN',
-        'USE_BLE',
-        'PRODUCE_IMAGES',
-        'CONSUMER_WEBUI',
-    ]
+    boolKeys = ['USE_CLOUD', 'USE_LAN', 'USE_BLE']
     strKeys = [
         'APP_ID',
         'APP_TOKEN',
@@ -39,6 +34,8 @@ export class Config {
         'IMG_HEIGHT',
         'IMG_WIDTH',
         'TEST_DURATION_SEC',
+        'HTTP_PORT',
+        'HTTP_HOST',
     ]
 
     toConfKey(appKey: string): string {
