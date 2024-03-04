@@ -1,15 +1,23 @@
 import http, { IncomingMessage, ServerResponse } from 'node:http'
-import { Config } from '../config.js'
 import { CondPromise } from '../util/cond_promise.js'
+
+export class HttpConfig {
+    host: string
+    port: number
+    constructor(host: string, port: number) {
+        this.host = host
+        this.port = port
+    }
+}
 
 export class HttpBase {
     // TODO factor out http-specific config
-    config: Config
+    config: HttpConfig
     server: http.Server
     // A promise that resolves after we receive a 'close' event from http.Server
     serverFinished: CondPromise
 
-    constructor(config: Config) {
+    constructor(config: HttpConfig) {
         this.config = config
         this.server = http.createServer()
         this.serverFinished = new CondPromise()
@@ -32,16 +40,15 @@ export class HttpBase {
     }
 
     async start() {
-        const port = parseInt(this.config.getStr('HTTP_PORT'))
 
         await this.registerEvents()
 
         const options = {
-            host: this.config.getStr('HTTP_HOST'),
-            port: port,
+            host: this.config.host,
+            port: this.config.port,
         }
         this.server.listen(options, () => {
-            console.info(`--> http server listening on ${options.host}:${port}`)
+            console.info(`--> http server listening on ${options.host}:${this.config.port}`)
         })
     }
 

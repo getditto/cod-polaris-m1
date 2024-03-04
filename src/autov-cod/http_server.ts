@@ -26,7 +26,7 @@ export class HttpServer {
     constructor(dittoCod: DittoCOD, config: Config) {
         this.dittoCod = dittoCod
         this.config = config
-        this.base = new HttpBase(config)
+        this.base = new HttpBase(config.toHttpConfig())
         this.serverFinished = new CondPromise()
     }
 
