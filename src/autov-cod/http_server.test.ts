@@ -39,7 +39,7 @@ test('http server init', async () => {
     // cleanup test if client gets stuck
     const watchdog = setTimeout(() => {
         console.error('watchdog: test timeout, exiting')
-        httpServer.server.close()
+        httpServer.stop()
         process.exit(1)
     }, 4000)
     sleep(5000)

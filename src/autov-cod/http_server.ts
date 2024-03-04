@@ -1,4 +1,4 @@
-import http, { IncomingMessage, ServerResponse } from 'node:http'
+import { IncomingMessage, ServerResponse } from 'node:http'
 
 import { DittoCOD } from '../ditto_cod.js'
 import { Config } from './config.js'
@@ -11,6 +11,7 @@ import {
     v0TrialStart,
 } from './protocol.js'
 import { CondPromise } from '../util/cond_promise.js'
+import { HttpBase } from '../common-cod/http_base.js'
 
 const URL_BASE = '/api/trial/0/'
 const JSON_CONTENT = 'application/json; charset=utf-8'
@@ -18,14 +19,14 @@ const JSON_CONTENT = 'application/json; charset=utf-8'
 export class HttpServer {
     dittoCod: DittoCOD
     config: Config
-    server: http.Server
+    base: HttpBase
     // A promise that resolves after we receive a 'close' event from http.Server
     serverFinished: CondPromise
 
     constructor(dittoCod: DittoCOD, config: Config) {
         this.dittoCod = dittoCod
         this.config = config
-        this.server = http.createServer()
+        this.base = new HttpBase(config)
         this.serverFinished = new CondPromise()
     }
 
@@ -54,7 +55,7 @@ export class HttpServer {
     }
 
     private async registerRoutes() {
-        this.server.on(
+        this.base.server.on(
             'request',
             (req: IncomingMessage, res: ServerResponse) => {
                 if (req.method !== 'GET') {
@@ -80,41 +81,13 @@ export class HttpServer {
         )
     }
 
-    private async registerEvents() {
-        this.server.on('close', () => {
-            console.info('http server close event')
-            this.serverFinished.resolve()
-        })
-        this.server.on(
-            'dropRequest',
-            // eslint-disable-next-line @typescript-eslint/no-unused-vars
-            (_req: IncomingMessage, _resp: ServerResponse) => {
-                console.warn(
-                    'http server reached maxRequestsPerSocket, dropping request'
-                )
-            }
-        )
-    }
-
     async start() {
-        const port = parseInt(this.config.getStr('HTTP_PORT'))
-
         await this.registerRoutes()
-        await this.registerEvents()
-
-        const options = {
-            host: this.config.getStr('HTTP_HOST'),
-            port: port,
-        }
-        this.server.listen(options, () => {
-            console.info(`--> http server listening on ${options.host}:${port}`)
-        })
+        await this.base.start()
     }
 
     async stop() {
-        console.info('<-- http server shutdown')
-        this.server.close()
-        // waits for http.Server 'close' event
-        await this.serverFinished.getPromise()
+        console.info('<-- autov http server shutdown')
+        await this.base.stop()
     }
 }
