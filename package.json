@@ -4,7 +4,7 @@
   "version": "0.0.1",
   "scripts": {
     "build": "tsc",
-    "start-acs": "tsc && node dist/autov-cod-server/index.js",
+    "start-acs": "tsc && node dist/autov-cod/index.js",
     "start-prod-cons": "tsc && node dist/prod_cons/index.js",
     "start-peer": "tsc && node dist/cmesh_peer.js",
     "test": "jest",

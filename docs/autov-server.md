@@ -29,7 +29,7 @@ prefixes such as `C.`, etc.
 
 ## AutoV COD API
 
-The `autov-cod-server` process exposes the following REST API on the configured
+The `autov-cod` process exposes the following REST API on the configured
 HTTP port, available only to localhost connections by default:
 
 ### A.I. Start / Stop Trial

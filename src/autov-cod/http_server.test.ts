@@ -22,7 +22,7 @@ async function httpGet(url: string): Promise<string> {
 }
 
 test('http server init', async () => {
-    const config = new Config('./acs-config.json.example')
+    const config = new Config('./autov-config.json.example')
     const dittoCod = new DittoCOD(config.toDittoConfig())
     const httpServer = new HttpServer(dittoCod, config)
     await httpServer.start()

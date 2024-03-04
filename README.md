@@ -6,19 +6,21 @@ __See also: [COD Overview](docs/README.md) for specific project deliverables.__
 
 ## Prototype Apps
 
+
+*autov-cod*
+
+This is a HTTP to Ditto proxy which is intended to run as a separate process on
+an autonomous vehicle ("autov"), providing an easy way to integrate multiple other
+processes with a single common operational database (COD) based on the Ditto SDK.
+
+*base-cod*
+This is the base-facing side of `autov-cod`.
+
 *Producer/Consumer*
 
 `src/prod_cons/index.ts` a simple producer/consumer app including metadata and
 sensor (camera) communication and a simple HTTP UI which provides a "webcams
 over Ditto" demo.
-
-*autov-cod-server*
-
-`src/autov-cod-server/index.ts`
-This is a HTTP to Ditto proxy which is intended to run as a separate process on
-an autonomous vehicle ("autov"), providing an easy way to integrate multiple other
-processes with a single common operational database (COD) based on the Ditto SDK.
-
 *Test Autonomous Vehicle*
 
 Work-in-progress test and prototyping support for autonomous vehicle (autov)
