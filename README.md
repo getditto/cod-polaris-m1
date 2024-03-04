@@ -2,7 +2,9 @@
 
 Ditto Common Operational Database (COD) Prototypes
 
-## Apps
+__See also: [COD Overview](docs/README.md) for specific project deliverables.__
+
+## Prototype Apps
 
 *Producer/Consumer*
 
