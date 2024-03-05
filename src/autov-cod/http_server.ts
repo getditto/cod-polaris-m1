@@ -1,7 +1,7 @@
 import { IncomingMessage, ServerResponse } from 'node:http'
 
 import { DittoCOD } from '../ditto_cod.js'
-import { Config } from './config.js'
+import { Config } from '../common-cod/config.js'
 import {
     Geometry,
     Timestamp,
@@ -9,7 +9,7 @@ import {
     v0TrialEnd,
     v0TrialInit,
     v0TrialStart,
-} from './protocol.js'
+} from '../common-cod/protocol.js'
 import { CondPromise } from '../util/cond_promise.js'
 import { HttpBase } from '../common-cod/http_base.js'
 

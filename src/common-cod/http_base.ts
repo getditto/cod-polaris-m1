@@ -40,7 +40,6 @@ export class HttpBase {
     }
 
     async start() {
-
         await this.registerEvents()
 
         const options = {
@@ -48,7 +47,9 @@ export class HttpBase {
             port: this.config.port,
         }
         this.server.listen(options, () => {
-            console.info(`--> http server listening on ${options.host}:${this.config.port}`)
+            console.info(
+                `--> http server listening on ${options.host}:${this.config.port}`
+            )
         })
     }
 
