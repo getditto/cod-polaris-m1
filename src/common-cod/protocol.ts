@@ -33,18 +33,15 @@ export class Geometry {
 export class TrialId {
     id_tuple: [number, number, number] = [0, 0, 0]
 
-    fromString(s: string): TrialId {
+    public static fromString(s: string): TrialId {
         // Expects string "int.int.int"
         const ints = s.split('.')
         if (ints.length != 3 || !ints.every((i) => i.match(/^\d+$/))) {
             throw new Error('Invalid TrialId string ' + s)
         }
-        this.id_tuple = [
-            parseInt(ints[0]),
-            parseInt(ints[1]),
-            parseInt(ints[2]),
-        ]
-        return this
+        const tid = new TrialId()
+        tid.id_tuple = [parseInt(ints[0]), parseInt(ints[1]), parseInt(ints[2])]
+        return tid
     }
 
     toString(): string {
@@ -87,6 +84,25 @@ export class v0TrialStart {
     serialize(): string {
         return JSON.stringify(this.toObject())
     }
+
+    public static fromString(s: string): v0TrialStart {
+        const parsed = JSON.parse(s, (key, value) => {
+            if (key == 'timestamp') {
+                return Timestamp.fromString(value)
+            } else if (key == 'id') {
+                return TrialId.fromString(value)
+            } else {
+                return value
+            }
+        })
+        const start = new v0TrialStart(
+            parsed.timestamp,
+            parsed.id,
+            parsed.num_targets,
+            parsed.geometry
+        )
+        return start
+    }
 }
 
 export class v0TrialEnd {
@@ -111,6 +127,20 @@ export class v0TrialEnd {
     serialize(): string {
         return JSON.stringify(this.toObject())
     }
+
+    public static fromString(s: string): v0TrialEnd {
+        const parsed = JSON.parse(s, (key, value) => {
+            if (key == 'timestamp') {
+                return Timestamp.fromString(value)
+            } else if (key == 'id') {
+                return TrialId.fromString(value)
+            } else {
+                return value
+            }
+        })
+        const end = new v0TrialEnd(parsed.timestamp, parsed.id)
+        return end
+    }
 }
 
 export class v0TrialInit {
@@ -130,7 +160,6 @@ export class v0TrialInit {
     }
 
     public static fromString(s: string): v0TrialInit {
-        console.debug('v0TrialInit fromString', s)
         const parsed = JSON.parse(s, (key, value) => {
             if (key == 'timestamp') {
                 return Timestamp.fromString(value)
@@ -138,7 +167,6 @@ export class v0TrialInit {
                 return value
             }
         })
-        console.debug('XXX parsed', parsed)
         const init = new v0TrialInit()
         init.version = parsed.version
         init.name = parsed.name
