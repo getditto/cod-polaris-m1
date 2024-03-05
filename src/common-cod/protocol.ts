@@ -10,11 +10,16 @@ export class Timestamp {
         if (date == null) {
             date = new Date()
         }
-        this.dateStr = new Date().toISOString()
+        this.dateStr = date.toISOString()
     }
 
     public toString(): string {
         return this.dateStr
+    }
+
+    public static fromString(s: string): Timestamp {
+        const date = new Date(s)
+        return new Timestamp(date)
     }
 }
 
@@ -112,6 +117,7 @@ export class v0TrialInit {
     version = 0
     name = 'Init'
     timestamp = new Timestamp()
+
     private toObject(): Record<string, string | number> {
         return {
             version: this.version,
@@ -121,5 +127,22 @@ export class v0TrialInit {
     }
     serialize(): string {
         return JSON.stringify(this.toObject())
+    }
+
+    public static fromString(s: string): v0TrialInit {
+        console.debug('v0TrialInit fromString', s)
+        const parsed = JSON.parse(s, (key, value) => {
+            if (key == 'timestamp') {
+                return Timestamp.fromString(value)
+            } else {
+                return value
+            }
+        })
+        console.debug('XXX parsed', parsed)
+        const init = new v0TrialInit()
+        init.version = parsed.version
+        init.name = parsed.name
+        init.timestamp = parsed.timestamp
+        return init
     }
 }
