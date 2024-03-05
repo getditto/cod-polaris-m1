@@ -1,15 +1,15 @@
-# AV COD Server
+# AutoV COD Server
 Design doc for a HTTP <-> Ditto proxy which acts as an autonomous vehicle's
-common operational database (AV COD).
+common operational database (AutoV COD).
 
 ## Status
 *API Version: 0*
 Initial prototype design for integration testing and feedback.
 
 
-## AV COD API
+## AutoV COD API
 
-The `av-cod-server` process exposes the following REST API on the configured
+The `autov-cod-server` process exposes the following REST API on the configured
 HTTP port, available only to localhost connections by default:
 
 ### Start / Stop Trial
@@ -79,8 +79,8 @@ command received was to end the trial.
 In version 0 of the API, additional fields MAY be present in the response
 documents, but they will be igored. For `Trial Start` and `Trial End`, the
 `timestamp` will be the time the corresponding command originated. For `Init`,
-the timestamp will simply be the time the server (AV COD) wrote the response to
-the client.
+the timestamp will simply be the time the server (AutoV COD) wrote the response
+to the client.
 
 ### Blocking Query
 

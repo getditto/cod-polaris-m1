@@ -10,16 +10,16 @@ Ditto Common Operational Database (COD) Prototypes
 sensor (camera) communication and a simple HTTP UI which provides a "webcams
 over Ditto" demo.
 
-*av-cod-server*
+*autov-cod-server*
 
-`src/av-cod-server/index.ts`
+`src/autov-cod-server/index.ts`
 This is a HTTP to Ditto proxy which is intended to run as a separate process on
-an autonomous vehicle (AV), providing an easy way to integrate multiple other
+an autonomous vehicle ("autov"), providing an easy way to integrate multiple other
 processes with a single common operational database (COD) based on the Ditto SDK.
 
-*Test AV*
+*Test Autonomous Vehicle*
 
-Work-in-progress test and prototyping support for autonomous vehicle (AV)
+Work-in-progress test and prototyping support for autonomous vehicle (autov)
 integration experiments.
 
 ## Setup
