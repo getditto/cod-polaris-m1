@@ -23,6 +23,7 @@
     "@dittolive/ditto": "4.5.2",
     "@fastify/static": "^6.12.0",
     "@types/node": "^20.5.1",
+    "axios": "^1.6.7",
     "fastify": "^4.25.2",
     "nconf": "=0.12.0",
     "strip-ansi": "^6.0.1",
