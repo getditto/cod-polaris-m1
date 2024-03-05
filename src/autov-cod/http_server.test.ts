@@ -1,6 +1,6 @@
 import http, { IncomingMessage } from 'node:http'
 import { HttpServer } from './http_server.js'
-import { Config } from './config.js'
+import { Config } from '../common-cod/config.js'
 import { DittoCOD } from '../ditto_cod.js'
 import { sleep } from '../util/util.js'
 
