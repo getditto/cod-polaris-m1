@@ -11,9 +11,8 @@ import {
     v0TrialWait,
 } from '../common-cod/protocol.js'
 import { CondPromise } from '../util/cond_promise.js'
-import { HttpBase, HttpStatus } from '../common-cod/http_base.js'
+import { HttpBase, HttpStatus, normalizeUrl } from '../common-cod/http_base.js'
 
-const URL_BASE = '/api/trial/0/'
 const JSON_CONTENT = 'application/json; charset=utf-8'
 
 export class HttpServer {
@@ -30,13 +29,14 @@ export class HttpServer {
         this.serverFinished = new CondPromise()
     }
 
-    private async handleState(_req: IncomingMessage, rep: ServerResponse) {
+    private async handleState(rep: ServerResponse) {
         // XXX TODO implement
         rep.writeHead(HttpStatus.Ok, { 'Content-Type': JSON_CONTENT })
         rep.end(new v0TrialWait().serialize())
     }
 
-    private async handleStart(_req: IncomingMessage, rep: ServerResponse) {
+    private async handleStart(tid: TrialId, rep: ServerResponse) {
+        console.debug('Received trial start:', tid)
         // XXX TODO implement
         const ts = new Timestamp()
         const id = new TrialId()
@@ -46,7 +46,8 @@ export class HttpServer {
         rep.end(new v0TrialStart(ts, id, num_targets, geom).serialize())
     }
 
-    private async handleEnd(_req: IncomingMessage, rep: ServerResponse) {
+    private async handleEnd(tid: TrialId, rep: ServerResponse) {
+        console.debug('Received trial end:', tid)
         // XXX TODO implement
         const ts = new Timestamp()
         const id = new TrialId()
@@ -54,29 +55,43 @@ export class HttpServer {
         rep.end(new v0TrialEnd(ts, id).serialize())
     }
 
+    private async router(req: IncomingMessage, res: ServerResponse) {
+        if (req.method !== 'GET') {
+            res.writeHead(HttpStatus.BadRequest)
+            res.end()
+            return
+        }
+        const url = normalizeUrl(req.url ?? '')
+        const toks = url.split('/').slice(1)
+        if (toks.length >= 2 && toks[0] == 'api' && toks[1] == 'trial') {
+            if (toks.length == 2) {
+                // GET /api/trial -> non-blocking, latest state
+                return this.handleState(res)
+            } else if (toks.length == 4) {
+                const trialId = TrialId.fromString(toks[2])
+                if (toks[3] == 'start') {
+                    // GET /api/trial/<id>/start -> block for start
+                    return this.handleStart(trialId, res)
+                } else if (toks[3] == 'end') {
+                    // GET /api/trial/<id>/end -> block for end
+                    return this.handleEnd(trialId, res)
+                }
+            }
+
+            res.writeHead(HttpStatus.NotFound)
+            res.end()
+        }
+    }
+
     private async registerRoutes() {
         this.base.server.on(
             'request',
             (req: IncomingMessage, res: ServerResponse) => {
-                if (req.method !== 'GET') {
+                this.router(req, res).catch((e) => {
+                    console.info('BadRequest: ', e.message)
                     res.writeHead(HttpStatus.BadRequest)
                     res.end()
-                    return
-                }
-                switch (req.url) {
-                    case URL_BASE + 'state':
-                        this.handleState(req, res)
-                        break
-                    case URL_BASE + 'start':
-                        this.handleStart(req, res)
-                        break
-                    case URL_BASE + 'end':
-                        this.handleEnd(req, res)
-                        break
-                    default:
-                        res.writeHead(HttpStatus.NotFound)
-                        res.end()
-                }
+                })
             }
         )
     }

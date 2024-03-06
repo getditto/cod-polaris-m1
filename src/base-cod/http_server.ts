@@ -50,7 +50,7 @@ export class HttpServer {
         rep: ServerResponse
     ) {
         const _v0Wait = v0TrialWait.fromString(body)
-        console.debug('Received trial Wait:', _v0Wait)
+        console.debug('Received trial Wait (health check):', _v0Wait)
         rep.writeHead(HttpStatus.Ok, { 'Content-Type': JSON_CONTENT })
         rep.end()
     }
