@@ -23,5 +23,6 @@ autonomous vehicle (autov) side, as specified in
 
 - The client MAY omit the `version` field. If it is included, its value must be
   `0` (zero as integer).
-- Sending an `Init` message will not be propagated in any way, but the
-  `base-cod` server will respond with success (200 OK) if system health is good.
+- Sending a `Wait` message will not be propagated in any way, but the
+  `base-cod` server will respond with success (200 OK) if system health is
+  good.

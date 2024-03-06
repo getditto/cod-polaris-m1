@@ -7,11 +7,11 @@ import {
     Timestamp,
     TrialId,
     v0TrialEnd,
-    v0TrialInit,
     v0TrialStart,
+    v0TrialWait,
 } from '../common-cod/protocol.js'
 import { CondPromise } from '../util/cond_promise.js'
-import { HttpBase } from '../common-cod/http_base.js'
+import { HttpBase, HttpStatus } from '../common-cod/http_base.js'
 
 const URL_BASE = '/api/trial/0/'
 const JSON_CONTENT = 'application/json; charset=utf-8'
@@ -32,8 +32,8 @@ export class HttpServer {
 
     private async handleState(_req: IncomingMessage, rep: ServerResponse) {
         // XXX TODO implement
-        rep.writeHead(200, { 'Content-Type': JSON_CONTENT })
-        rep.end(new v0TrialInit().serialize())
+        rep.writeHead(HttpStatus.Ok, { 'Content-Type': JSON_CONTENT })
+        rep.end(new v0TrialWait().serialize())
     }
 
     private async handleStart(_req: IncomingMessage, rep: ServerResponse) {
@@ -42,7 +42,7 @@ export class HttpServer {
         const id = new TrialId()
         const num_targets = 3
         const geom = new Geometry()
-        rep.writeHead(200, { 'Content-Type': JSON_CONTENT })
+        rep.writeHead(HttpStatus.Ok, { 'Content-Type': JSON_CONTENT })
         rep.end(new v0TrialStart(ts, id, num_targets, geom).serialize())
     }
 
@@ -50,7 +50,7 @@ export class HttpServer {
         // XXX TODO implement
         const ts = new Timestamp()
         const id = new TrialId()
-        rep.writeHead(200, { 'Content-Type': JSON_CONTENT })
+        rep.writeHead(HttpStatus.Ok, { 'Content-Type': JSON_CONTENT })
         rep.end(new v0TrialEnd(ts, id).serialize())
     }
 
@@ -59,7 +59,7 @@ export class HttpServer {
             'request',
             (req: IncomingMessage, res: ServerResponse) => {
                 if (req.method !== 'GET') {
-                    res.writeHead(405)
+                    res.writeHead(HttpStatus.BadRequest)
                     res.end()
                     return
                 }
@@ -74,7 +74,7 @@ export class HttpServer {
                         this.handleEnd(req, res)
                         break
                     default:
-                        res.writeHead(404)
+                        res.writeHead(HttpStatus.NotFound)
                         res.end()
                 }
             }

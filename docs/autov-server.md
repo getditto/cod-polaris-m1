@@ -83,22 +83,22 @@ following messages:
 }
 ```
 
-##### Init
+##### Wait
 ```
 {
     "version": 0,
-    “name”: “Init”,
+    “name”: “Wait”,
     “timestamp”: <ISO format timestamp with time zone>,
 }
 ```
 
-Where `Init` means we are waiting to receive the trial start command, `Trial
+Where `Wait` means we are waiting to receive the trial start command, `Trial
 Start` means it was received already, and `Trial End` means the most recent
 command received was to end the trial.
 
 In version 0 of the API, additional fields MAY be present in the response
 documents, but they will be igored. For `Trial Start` and `Trial End`, the
-`timestamp` will be the time the corresponding command originated. For `Init`,
+`timestamp` will be the time the corresponding command originated. For `Wait`,
 the timestamp will simply be the time the server (AutoV COD) wrote the response
 to the client.
 

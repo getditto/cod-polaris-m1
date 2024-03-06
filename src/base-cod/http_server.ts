@@ -2,10 +2,13 @@ import { IncomingMessage, ServerResponse } from 'node:http'
 
 import { DittoCOD } from '../ditto_cod.js'
 import { Config } from '../common-cod/config.js'
-import { v0TrialInit } from '../common-cod/protocol.js'
-import { HttpBase } from '../common-cod/http_base.js'
+import { v0TrialWait } from '../common-cod/protocol.js'
+import { HttpBase, HttpStatus, normalizeUrl } from '../common-cod/http_base.js'
 
-const URL_BASE = '/api/trial'
+const URL_BASE = '/api'
+const URL_TRIAL_START = URL_BASE + '/trial_start'
+const URL_TRIAL_END = URL_BASE + '/trial_end'
+
 const JSON_CONTENT = 'application/json; charset=utf-8'
 
 export class HttpServer {
@@ -26,7 +29,7 @@ export class HttpServer {
     ) {
         // TODO
         // For now return 400
-        rep.writeHead(400)
+        rep.writeHead(HttpStatus.BadRequest)
         rep.end()
     }
 
@@ -37,18 +40,18 @@ export class HttpServer {
     ) {
         // TODO
         // For now return 400
-        rep.writeHead(400)
+        rep.writeHead(HttpStatus.BadRequest)
         rep.end()
     }
 
-    private async handleInit(
+    private async handleWait(
         body: string,
         _req: IncomingMessage,
         rep: ServerResponse
     ) {
-        const _v0Init = v0TrialInit.fromString(body)
-        console.debug('Received trial init:', _v0Init)
-        rep.writeHead(200, { 'Content-Type': JSON_CONTENT })
+        const _v0Wait = v0TrialWait.fromString(body)
+        console.debug('Received trial Wait:', _v0Wait)
+        rep.writeHead(HttpStatus.Ok, { 'Content-Type': JSON_CONTENT })
         rep.end()
     }
 
@@ -62,23 +65,26 @@ export class HttpServer {
                 const init = JSON.parse(body)
                 if (init.version != undefined && init.version != 0) {
                     console.info('unsupported version:', init.version)
-                    rep.writeHead(401)
+                    rep.writeHead(HttpStatus.BadRequest)
                     rep.end()
                 } else {
                     if (init.name == 'Trial Start') {
                         await this.handleStart(body, req, rep)
                     } else if (init.name == 'Trial End') {
                         await this.handleEnd(body, req, rep)
-                    } else if (init.name == 'Init') {
-                        await this.handleInit(body, req, rep)
+                    } else if (init.name == 'Wait') {
+                        // This is not in the spec--but would be good to have a
+                        // side-effect free "ping" or "get status" endpoint to
+                        // sanity/health check the service
+                        await this.handleWait(body, req, rep)
                     } else {
-                        rep.writeHead(400)
+                        rep.writeHead(HttpStatus.BadRequest)
                         rep.end()
                     }
                 }
             } catch (e) {
-                console.log('error handling POST (401):', e)
-                rep.writeHead(401)
+                console.log('error handling POST (422):', e)
+                rep.writeHead(HttpStatus.UnprocessableEntity)
                 rep.end()
             }
         })
@@ -89,19 +95,21 @@ export class HttpServer {
             'request',
             (req: IncomingMessage, res: ServerResponse) => {
                 if (req.method !== 'POST') {
-                    res.writeHead(405)
+                    res.writeHead(HttpStatus.BadRequest)
                     res.end()
                     return
                 }
-                switch (req.url) {
-                    // TODO normalize url to handle w/ and w/o trailing slash
-                    case URL_BASE:
+                const url = normalizeUrl(req.url ?? '')
+                switch (url) {
+                    case URL_TRIAL_START:
+                    case URL_TRIAL_END:
                         this.handlePost(req, res)
                         break
                     default:
                         console.info('unsupported url (404):', req.url)
-                        res.writeHead(404)
+                        res.writeHead(HttpStatus.NotFound)
                         res.end()
+                        break
                 }
             }
         )
