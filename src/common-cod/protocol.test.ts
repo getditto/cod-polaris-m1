@@ -3,7 +3,7 @@ import {
     Timestamp,
     TrialId,
     v0TrialEnd,
-    v0TrialInit,
+    v0TrialWait,
     v0TrialStart,
 } from './protocol.js'
 
@@ -16,10 +16,10 @@ test('timestamp serde', () => {
 })
 
 test('v0 init serde', () => {
-    const init = new v0TrialInit()
-    const str = init.serialize() // serialize
-    const init2 = v0TrialInit.fromString(str) // deserialize
-    expect(init2).toEqual(init)
+    const src = new v0TrialWait()
+    const str = src.serialize() // serialize
+    const init2 = v0TrialWait.fromString(str) // deserialize
+    expect(init2).toEqual(src)
 })
 
 test('v0 start serde', () => {

@@ -32,7 +32,7 @@ test('http server init', async () => {
     expect(obj).toHaveProperty('version')
     expect(obj.version).toBe(0)
     expect(obj).toHaveProperty('name')
-    expect(obj.name).toBe('Init')
+    expect(obj.name).toBe('Wait')
     expect(obj).toHaveProperty('timestamp')
     expect(obj.timestamp).toMatch(/\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}.*Z/)
     console.log('Validated GET /api/trial/0/state response from server')

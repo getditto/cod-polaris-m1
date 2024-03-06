@@ -143,9 +143,9 @@ export class v0TrialEnd {
     }
 }
 
-export class v0TrialInit {
+export class v0TrialWait {
     version = 0
-    name = 'Init'
+    name = 'Wait'
     timestamp = new Timestamp()
 
     private toObject(): Record<string, string | number> {
@@ -159,7 +159,7 @@ export class v0TrialInit {
         return JSON.stringify(this.toObject())
     }
 
-    public static fromString(s: string): v0TrialInit {
+    public static fromString(s: string): v0TrialWait {
         const parsed = JSON.parse(s, (key, value) => {
             if (key == 'timestamp') {
                 return Timestamp.fromString(value)
@@ -167,7 +167,7 @@ export class v0TrialInit {
                 return value
             }
         })
-        const init = new v0TrialInit()
+        const init = new v0TrialWait()
         init.version = parsed.version
         init.name = parsed.name
         init.timestamp = parsed.timestamp

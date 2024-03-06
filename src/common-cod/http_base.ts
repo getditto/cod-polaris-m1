@@ -10,6 +10,24 @@ export class HttpConfig {
     }
 }
 
+// Response codes allowed by the spec we're implementing
+export enum HttpStatus {
+    Ok = 200,
+    Created = 201,
+    BadRequest = 400,
+    Unauthorized = 401,
+    NotFound = 404,
+    UnprocessableEntity = 422,
+    TooManyRequests = 429,
+}
+
+export function normalizeUrl(url: string): string {
+    if (url.endsWith('/')) {
+        return url.slice(0, -1)!
+    }
+    return url
+}
+
 export class HttpBase {
     // TODO factor out http-specific config
     config: HttpConfig
