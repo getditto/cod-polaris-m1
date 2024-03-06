@@ -23,10 +23,12 @@ export class Timestamp {
     }
 }
 
-// GeoJSON geometry object
+// GeoJSON geometry object of type point or polygon
 export class Geometry {
     type: string = ''
     // lat-long decimal degrees in WGS84 coordinate system
+    // TODO point: https://datatracker.ietf.org/doc/html/rfc7946#appendix-A.1
+    //  or polygon object https://datatracker.ietf.org/doc/html/rfc7946#appendix-A.3
     coordinates: Array<number> = []
 }
 
@@ -53,20 +55,20 @@ export class v0TrialStart {
     version: number = 0
     name: string = 'Trial Start'
     timestamp: Timestamp
-    id: TrialId
+    trial_id: TrialId
     num_targets: number
-    geometry: Geometry
+    coordinates: Geometry
 
     constructor(
         ts: Timestamp,
-        id: TrialId,
+        trial_id: TrialId,
         num_targets: number,
-        geometry: Geometry
+        coordinates: Geometry
     ) {
         this.timestamp = ts
-        this.id = id
+        this.trial_id = trial_id
         this.num_targets = num_targets
-        this.geometry = geometry
+        this.coordinates = coordinates
     }
 
     // control serialization
@@ -75,9 +77,9 @@ export class v0TrialStart {
             version: this.version,
             name: this.name,
             timestamp: this.timestamp.toString(),
-            id: this.id.toString(),
+            trial_id: this.trial_id.toString(),
             num_targets: this.num_targets,
-            geometry: this.geometry, // TODO check serialization (JSON)
+            coordinates: this.coordinates, // TODO check serialization (JSON)
         }
     }
 
@@ -89,7 +91,7 @@ export class v0TrialStart {
         const parsed = JSON.parse(s, (key, value) => {
             if (key == 'timestamp') {
                 return Timestamp.fromString(value)
-            } else if (key == 'id') {
+            } else if (key == 'trial_id') {
                 return TrialId.fromString(value)
             } else {
                 return value
@@ -97,9 +99,9 @@ export class v0TrialStart {
         })
         const start = new v0TrialStart(
             parsed.timestamp,
-            parsed.id,
+            parsed.trial_id,
             parsed.num_targets,
-            parsed.geometry
+            parsed.coordinates
         )
         return start
     }
@@ -109,10 +111,10 @@ export class v0TrialEnd {
     version: number = 0
     name: string = 'Trial End'
     timestamp: Timestamp
-    id: TrialId
+    trial_id: TrialId
     constructor(ts: Timestamp, id: TrialId) {
         this.timestamp = ts
-        this.id = id
+        this.trial_id = id
     }
     // control serialization
     private toObject(): Record<string, string | number> {
@@ -120,7 +122,7 @@ export class v0TrialEnd {
             version: this.version,
             name: this.name,
             timestamp: this.timestamp.toString(),
-            id: this.id.toString(),
+            trial_id: this.trial_id.toString(),
         }
     }
 
@@ -132,13 +134,13 @@ export class v0TrialEnd {
         const parsed = JSON.parse(s, (key, value) => {
             if (key == 'timestamp') {
                 return Timestamp.fromString(value)
-            } else if (key == 'id') {
+            } else if (key == 'trial_id') {
                 return TrialId.fromString(value)
             } else {
                 return value
             }
         })
-        const end = new v0TrialEnd(parsed.timestamp, parsed.id)
+        const end = new v0TrialEnd(parsed.timestamp, parsed.trial_id)
         return end
     }
 }

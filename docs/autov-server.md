@@ -57,9 +57,9 @@ following messages:
     "version": 0,
     “name”: “Trial Start”,
     “timestamp”: <ISO format timestamp with time zone>
-        “id”: <string of format int.int.int>
+        “trial_id”: <string of format int.int.int>
         “num_targets”: <integer>
-        "geometry": {
+        "coordinates": {
             "type": "Polygon",
             "coordinates": [
                 [ [<Lon_1, degrees WGS84 >, <Lat_1, degrees WGS84 >],
@@ -79,7 +79,7 @@ following messages:
     "version": 0,
     “name”: “Trial End”,
     “timestamp”: <ISO format timestamp with time zone>,
-    “id”: <string of format int.int.int>
+    “trial_id”: <string of format int.int.int>
 }
 ```
 
