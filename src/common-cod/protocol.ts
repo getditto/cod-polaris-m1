@@ -39,7 +39,7 @@ export class TrialId {
         // Expects string "int.int.int"
         const ints = s.split('.')
         if (ints.length != 3 || !ints.every((i) => i.match(/^\d+$/))) {
-            throw new Error('Invalid TrialId string ' + s)
+            throw new Error('Invalid trial_id ' + s)
         }
         const tid = new TrialId()
         tid.id_tuple = [parseInt(ints[0]), parseInt(ints[1]), parseInt(ints[2])]
