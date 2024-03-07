@@ -11,9 +11,12 @@ import {
     v0TrialWait,
 } from '../common-cod/protocol.js'
 import { CondPromise } from '../util/cond_promise.js'
-import { HttpBase, HttpStatus, normalizeUrl } from '../common-cod/http_base.js'
-
-const JSON_CONTENT = 'application/json; charset=utf-8'
+import {
+    CONTENT_TYPE_JSON,
+    HttpBase,
+    HttpStatus,
+    normalizeUrl,
+} from '../common-cod/http_base.js'
 
 export class HttpServer {
     dittoCod: DittoCOD
@@ -31,7 +34,7 @@ export class HttpServer {
 
     private async handleState(rep: ServerResponse) {
         // XXX TODO implement
-        rep.writeHead(HttpStatus.Ok, { 'Content-Type': JSON_CONTENT })
+        rep.writeHead(HttpStatus.Ok, CONTENT_TYPE_JSON)
         rep.end(new v0TrialWait().serialize())
     }
 
@@ -42,7 +45,7 @@ export class HttpServer {
         const id = new TrialId()
         const num_targets = 3
         const geom = new Geometry()
-        rep.writeHead(HttpStatus.Ok, { 'Content-Type': JSON_CONTENT })
+        rep.writeHead(HttpStatus.Ok, CONTENT_TYPE_JSON)
         rep.end(new v0TrialStart(ts, id, num_targets, geom).serialize())
     }
 
@@ -51,7 +54,7 @@ export class HttpServer {
         // XXX TODO implement
         const ts = new Timestamp()
         const id = new TrialId()
-        rep.writeHead(HttpStatus.Ok, { 'Content-Type': JSON_CONTENT })
+        rep.writeHead(HttpStatus.Ok, CONTENT_TYPE_JSON)
         rep.end(new v0TrialEnd(ts, id).serialize())
     }
 

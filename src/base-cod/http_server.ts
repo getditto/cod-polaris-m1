@@ -2,14 +2,16 @@ import { IncomingMessage, ServerResponse } from 'node:http'
 
 import { DittoCOD } from '../ditto_cod.js'
 import { Config } from '../common-cod/config.js'
-import { v0TrialWait } from '../common-cod/protocol.js'
-import { HttpBase, HttpStatus, normalizeUrl } from '../common-cod/http_base.js'
+import {
+    v0TrialEnd,
+    v0TrialStart,
+    v0TrialWait,
+} from '../common-cod/protocol.js'
+import { CONTENT_TYPE_JSON, HttpBase, HttpStatus, normalizeUrl } from '../common-cod/http_base.js'
 
 const URL_BASE = '/api'
 const URL_TRIAL_START = URL_BASE + '/trial_start'
 const URL_TRIAL_END = URL_BASE + '/trial_end'
-
-const JSON_CONTENT = 'application/json; charset=utf-8'
 
 export class HttpServer {
     dittoCod: DittoCOD
@@ -51,7 +53,7 @@ export class HttpServer {
     ) {
         const _v0Wait = v0TrialWait.fromString(body)
         console.debug('Received trial Wait (health check):', _v0Wait)
-        rep.writeHead(HttpStatus.Ok, { 'Content-Type': JSON_CONTENT })
+        rep.writeHead(HttpStatus.Ok)
         rep.end()
     }
 
