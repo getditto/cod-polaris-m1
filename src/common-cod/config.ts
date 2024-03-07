@@ -26,4 +26,13 @@ export class Config extends ConfigBase {
             parseInt(this.getStr('HTTP_PORT'))
         )
     }
+
+    isUnitTestConfig(): boolean {
+        return this.getStr('APP_ID') == 'your-app-id-here'
+    }
+
+    unitTestWarning(): string {
+        const bar = '==================================================='
+        return bar + '\nWARNING: using default unit test configuration\n' + bar
+    }
 }
