@@ -34,12 +34,14 @@ export class DittoCOD {
     ditto: Ditto | null
     identity: Identity
     transportConf: TransportConfig
+    private running: boolean
 
     constructor(config: DittoConfig) {
         this.config = config
         this.ditto = null
         this.identity = this.initIdentity()
         this.transportConf = this.initTransport()
+        this.running = false
     }
 
     private initTransport(): TransportConfig {
@@ -106,6 +108,10 @@ export class DittoCOD {
         return identity
     }
 
+    public isRunning(): boolean {
+        return this.running
+    }
+
     // Call before using this instance
     async start(): Promise<void> {
         await init()
@@ -133,10 +139,12 @@ export class DittoCOD {
 
         this.ditto.setTransportConfig(this.transportConf)
         this.ditto.startSync()
+        this.running = true
     }
 
     // Call before exiting
     async stop(): Promise<void> {
         this.ditto!.stopSync()
+        this.running = false
     }
 }

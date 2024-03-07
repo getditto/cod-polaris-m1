@@ -1,6 +1,7 @@
 import { DittoCOD } from '../ditto_cod.js'
 import { Config } from '../common-cod/config.js'
 import { HttpServer } from './http_server.js'
+import { TrialModel } from '../common-cod/trial_model.js'
 
 function usage() {
     console.log('Usage: node index.js [config-filename]')
@@ -27,9 +28,11 @@ async function main() {
     }
 
     const dittoCod = new DittoCOD(config.toDittoConfig())
+    const trialModel = new TrialModel(dittoCod, config)
     await dittoCod.start()
+    await trialModel.start()
 
-    const httpServer = new HttpServer(dittoCod, config)
+    const httpServer = new HttpServer(trialModel, config)
     await httpServer.start()
 }
 
