@@ -29,7 +29,6 @@ test('v0 start serde', () => {
     const geom = new Geometry()
     const src = new v0TrialStart(ts, id, numTargets, geom)
     const str = src.serialize() // serialize
-    console.debug('XXX serialized start:', str)
     const roundTrip = v0TrialStart.fromString(str) // deserialize
     expect(roundTrip).toEqual(src)
 })
@@ -40,5 +39,43 @@ test('v0 end serde', () => {
     const src = new v0TrialEnd(ts, id)
     const str = src.serialize() // serialize
     const roundTrip = v0TrialEnd.fromString(str) // deserialize
+    expect(roundTrip).toEqual(src)
+})
+
+test('geometry validation', () => {
+    const somePt = [-122.67648, 45.52306]
+    const somePoly = [somePt, [-122.673, 45.523], [-122.678, 45.524], somePt]
+    const geom = new Geometry()
+
+    // default constructor is invalid
+    expect(geom.isValid()).toBe(false)
+
+    // but the factory methods work
+    const point = Geometry.point(somePt[0], somePt[1])
+    expect(point.isValid()).toBe(true)
+
+    const poly = Geometry.polygon(somePoly)
+    expect(poly.isValid()).toBe(true)
+
+    // now make them invalid
+    point.coordinates = poly.coordinates
+    expect(point.isValid()).toBe(false)
+
+    poly.coordinates = somePt
+    expect(poly.isValid()).toBe(false)
+})
+
+test('geometry serde', () => {
+    const somePt = [-122.67648, 45.52306]
+    const somePoly = [somePt, [-122.673, 45.523], [-122.678, 45.524], somePt]
+
+    let src = Geometry.point(somePt[0], somePt[1])
+    let str = src.serialize()
+    let roundTrip = Geometry.fromString(str)
+    expect(roundTrip).toEqual(src)
+
+    src = Geometry.polygon(somePoly)
+    str = src.serialize()
+    roundTrip = Geometry.fromString(str)
     expect(roundTrip).toEqual(src)
 })
