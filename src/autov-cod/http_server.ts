@@ -32,12 +32,14 @@ export class HttpServer {
         this.serverFinished = new CondPromise()
     }
 
+    // GET of current trial state
     private async handleState(rep: ServerResponse) {
         // XXX TODO implement
         rep.writeHead(HttpStatus.Ok, CONTENT_TYPE_JSON)
         rep.end(new v0TrialWait().serialize())
     }
 
+    // Long-poll GET waiting for start command
     private async handleStart(tid: TrialId, rep: ServerResponse) {
         console.debug('Received trial start:', tid)
         // XXX TODO implement
@@ -49,6 +51,7 @@ export class HttpServer {
         rep.end(new v0TrialStart(ts, id, num_targets, geom).serialize())
     }
 
+    // Long-poll GET waiting for start command
     private async handleEnd(tid: TrialId, rep: ServerResponse) {
         console.debug('Received trial end:', tid)
         // XXX TODO implement
