@@ -12,7 +12,7 @@ import {
 } from '../common-cod/protocol.js'
 import { HttpStatus } from '../common-cod/http_base.js'
 
-class TestServer {
+class TestFixture {
     private httpServer: HttpServer | null = null
     async start() {
         const config = new Config('./base-config.json.example')
@@ -29,21 +29,21 @@ class TestServer {
     }
 }
 
-const testServer = new TestServer()
+const fixture = new TestFixture()
 
 beforeAll(async () => {
-    await testServer.start()
+    await fixture.start()
 })
 
 afterAll(async () => {
-    await testServer.stop()
+    await fixture.stop()
 })
 
 test('base health check', async () => {
     // For now: POST Wait message to /api/trial_start and confirm 200 response
     const initMsg = new v0TrialWait()
     const postData = initMsg.serialize()
-    const url = `http://localhost:${testServer.getPort()}/api/trial_start`
+    const url = `http://localhost:${fixture.getPort()}/api/trial_start`
     await axios
         .post(url, postData)
         .then((res) => {
@@ -80,7 +80,7 @@ describe('base trial start', () => {
     const startMsg = new v0TrialStart(ts, id, n, geom)
     const postData = startMsg.serialize()
     test('valid trial start', async () => {
-        const url = `http://localhost:${testServer.getPort()}/api/trial_start`
+        const url = `http://localhost:${fixture.getPort()}/api/trial_start`
         await axios
             .post(url, postData)
             .then((res) => {
@@ -92,7 +92,7 @@ describe('base trial start', () => {
     })
 
     test('invalid start trial_id', async () => {
-        const url = `http://localhost:${testServer.getPort()}/api/trial_start`
+        const url = `http://localhost:${fixture.getPort()}/api/trial_start`
         // have to bypass strong typing to mess up id
         const untypedObj = JSON.parse(postData)
         untypedObj.trial_id = '12.3'
@@ -116,7 +116,7 @@ describe('base trial end', () => {
     const startMsg = new v0TrialEnd(ts, id)
     const postData = startMsg.serialize()
     test('valid trial end', async () => {
-        const url = `http://localhost:${testServer.getPort()}/api/trial_end`
+        const url = `http://localhost:${fixture.getPort()}/api/trial_end`
         await axios
             .post(url, postData)
             .then((res) => {
@@ -128,7 +128,7 @@ describe('base trial end', () => {
     })
 
     test('invalid end trial_id', async () => {
-        const url = `http://localhost:${testServer.getPort()}/api/trial_end`
+        const url = `http://localhost:${fixture.getPort()}/api/trial_end`
         // have to bypass strong typing to mess up id
         const untypedObj = JSON.parse(postData)
         untypedObj.trial_id = '12.3.213x'

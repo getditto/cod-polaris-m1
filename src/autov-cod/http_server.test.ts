@@ -4,7 +4,7 @@ import { Config } from '../common-cod/config.js'
 import { DittoCOD } from '../ditto_cod.js'
 import { HttpStatus } from '../common-cod/http_base.js'
 
-class TestServer {
+class TestFixture {
     private httpServer: HttpServer | null = null
     async start() {
         const config = new Config('./autov-config.json.example')
@@ -17,14 +17,14 @@ class TestServer {
     }
 }
 
-const testServer = new TestServer()
+const fixture = new TestFixture()
 
 beforeAll(async () => {
-    await testServer.start()
+    await fixture.start()
 })
 
 afterAll(async () => {
-    await testServer.stop()
+    await fixture.stop()
 })
 
 test('http sanity', async () => {
