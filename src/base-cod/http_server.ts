@@ -7,7 +7,12 @@ import {
     v0TrialStart,
     v0TrialWait,
 } from '../common-cod/protocol.js'
-import { CONTENT_TYPE_JSON, HttpBase, HttpStatus, normalizeUrl } from '../common-cod/http_base.js'
+import {
+    CONTENT_TYPE_JSON,
+    HttpBase,
+    HttpStatus,
+    normalizeUrl,
+} from '../common-cod/http_base.js'
 
 const URL_BASE = '/api'
 const URL_TRIAL_START = URL_BASE + '/trial_start'
@@ -29,20 +34,21 @@ export class HttpServer {
         req: IncomingMessage,
         rep: ServerResponse
     ) {
-        // TODO
-        // For now return 400
-        rep.writeHead(HttpStatus.BadRequest)
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        const _tStart = v0TrialStart.fromString(body)
+        rep.writeHead(HttpStatus.Created)
         rep.end()
     }
 
     private async handleEnd(
         body: string,
-        req: IncomingMessage,
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        _req: IncomingMessage,
         rep: ServerResponse
     ) {
-        // TODO
-        // For now return 400
-        rep.writeHead(HttpStatus.BadRequest)
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        const _tEnd = v0TrialEnd.fromString(body)
+        rep.writeHead(HttpStatus.Created)
         rep.end()
     }
 
@@ -66,9 +72,10 @@ export class HttpServer {
             try {
                 const init = JSON.parse(body)
                 if (init.version != undefined && init.version != 0) {
-                    console.info('unsupported version:', init.version)
-                    rep.writeHead(HttpStatus.BadRequest)
-                    rep.end()
+                    const err = `Unsupported version: ${init.version}`
+                    console.info(err)
+                    rep.writeHead(HttpStatus.BadRequest, CONTENT_TYPE_JSON)
+                    rep.end(err)
                 } else {
                     if (init.name == 'Trial Start') {
                         await this.handleStart(body, req, rep)
@@ -85,9 +92,13 @@ export class HttpServer {
                     }
                 }
             } catch (e) {
-                console.log('error handling POST (422):', e)
-                rep.writeHead(HttpStatus.UnprocessableEntity)
-                rep.end()
+                let msg = 'error handling POST'
+                if (e instanceof Error) {
+                    msg += ': ' + e.message
+                }
+                console.info(msg)
+                rep.writeHead(HttpStatus.UnprocessableEntity, CONTENT_TYPE_JSON)
+                rep.end(msg)
             }
         })
     }
