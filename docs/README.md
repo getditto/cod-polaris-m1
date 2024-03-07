@@ -10,3 +10,7 @@ The API specifications for each service can be found here:
 
 - [Base COD Server](base-cod.md)
 - [AutoV COD Server](autov-server.md)
+
+An overview of the Ditto SDK integration is here:
+
+- [Ditto SDK Integration](ditto-sdk.md)
