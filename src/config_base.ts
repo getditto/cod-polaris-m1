@@ -1,7 +1,7 @@
 import { strict as assert } from 'assert'
 import { existsSync } from 'fs'
 import nconf from 'nconf'
-import { DittoConfig } from './ditto_cod.js'
+import { DittoConfig } from './ditto_config.js'
 
 export class ConfigBase {
     // Dfaults, by type...
@@ -18,7 +18,14 @@ export class ConfigBase {
 
     // Add all SHOUTY_KEYS here, by type
     boolKeys = ['USE_CLOUD', 'USE_LAN', 'USE_BLE']
-    strKeys = ['APP_ID', 'APP_TOKEN', 'OFFLINE_TOKEN', 'SHARED_KEY', 'BPA_URL']
+    strKeys = [
+        'APP_ID',
+        'APP_TOKEN',
+        'OFFLINE_TOKEN',
+        'SHARED_KEY',
+        'BPA_URL',
+        'PERSIST_DIR',
+    ]
 
     // Helper methods for subclass customization
     addBoolDefaults(defaults: Map<string, boolean | null>) {
@@ -65,11 +72,14 @@ export class ConfigBase {
         const dittoConf = new DittoConfig(
             this.getBool('USE_BLE'),
             this.getBool('USE_LAN'),
-            this.getStr('APP_ID')
+            this.getStr('APP_ID'),
+            this.getStr('PERSIST_DIR')
         )
         dittoConf.bpUrl = this.getStr('BPA_URL')
         dittoConf.sharedKey = this.getStr('SHARED_KEY')
+        dittoConf.appToken = this.getStr('APP_TOKEN')
         dittoConf.offlineToken = this.getStr('OFFLINE_TOKEN')
+        dittoConf.cloudSync = this.getBool('USE_CLOUD')
         return dittoConf
     }
 }
