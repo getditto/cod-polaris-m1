@@ -1,6 +1,4 @@
 import { IncomingMessage, ServerResponse } from 'node:http'
-
-import { DittoCOD } from '../ditto_cod.js'
 import { Config } from '../common-cod/config.js'
 import {
     v0TrialEnd,
@@ -13,18 +11,19 @@ import {
     HttpStatus,
     normalizeUrl,
 } from '../common-cod/http_base.js'
+import { TrialModel } from '../common-cod/trial_model.js'
 
 const URL_BASE = '/api'
 const URL_TRIAL_START = URL_BASE + '/trial_start'
 const URL_TRIAL_END = URL_BASE + '/trial_end'
 
 export class HttpServer {
-    dittoCod: DittoCOD
+    trialModel: TrialModel
     config: Config
     base: HttpBase
 
-    constructor(dittoCod: DittoCOD, config: Config) {
-        this.dittoCod = dittoCod
+    constructor(trialModel: TrialModel, config: Config) {
+        this.trialModel = trialModel
         this.config = config
         this.base = new HttpBase(config.toHttpConfig())
     }
