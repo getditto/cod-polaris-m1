@@ -24,12 +24,84 @@ export class Timestamp {
 }
 
 // GeoJSON geometry object of type point or polygon
+// Note: rest API spec uses the fields of this object directly (flattened)
+//   instead of including the object in its JSON. i.e. remove surrounding { }
+// Points are currently 2-d only (no elevation supported)
 export class Geometry {
     type: string = ''
     // lat-long decimal degrees in WGS84 coordinate system
-    // TODO point: https://datatracker.ietf.org/doc/html/rfc7946#appendix-A.1
-    //  or polygon object https://datatracker.ietf.org/doc/html/rfc7946#appendix-A.3
-    coordinates: Array<number> = []
+    coordinates: Array<number | Array<number>> = []
+
+    public static point(longitude: number, latitude: number) {
+        const geom = new Geometry()
+        geom.type = 'Point'
+        geom.coordinates = [longitude, latitude]
+        return geom
+    }
+
+    public static polygon(coords: Array<Array<number>>): Geometry {
+        const geom = new Geometry()
+        geom.type = 'Polygon'
+        geom.coordinates = coords
+        return geom
+    }
+
+    // Runtime check that this is a valid type of geometry
+    public isValid(): boolean {
+        if (this.type == 'Point') {
+            if (
+                this.coordinates.length != 2 ||
+                Array.isArray(this.coordinates[0])
+            ) {
+                return false
+            }
+        } else if (this.type == 'Polygon') {
+            // Minimum polygon points are a triangle + one closing point
+            // repeating the first
+            if (this.coordinates.length < 4) {
+                return false
+            }
+            if (!Array.isArray(this.coordinates[0])) {
+                return false
+            }
+            for (const coord of this.coordinates) {
+                // type coercion
+                const arr = coord as Array<number>
+                if (arr.length != 2) {
+                    return false
+                }
+            }
+        } else {
+            return false
+        }
+        return true
+    }
+
+    public serialize(): string {
+        // No customization yet
+        return JSON.stringify(this)
+    }
+
+    public static fromString(s: string): Geometry {
+        const parsed = JSON.parse(s, (key, value) => {
+            if (key == 'type') {
+                if (value != 'Point' && value != 'Polygon') {
+                    throw new Error('Invalid geometry type ' + value)
+                }
+                return value
+            } else if (key == 'coordinates') {
+                if (!Array.isArray(value)) {
+                    throw new Error('Invalid coordinate array value ' + value)
+                }
+                return value
+            }
+            return value
+        })
+        const geom = new Geometry()
+        geom.type = parsed.type
+        geom.coordinates = parsed.coordinates
+        return geom
+    }
 }
 
 export class TrialId {
