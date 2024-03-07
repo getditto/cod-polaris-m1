@@ -4,6 +4,7 @@ import {
     Ditto,
     Identity,
     TransportConfig,
+    Store,
 } from '@dittolive/ditto'
 
 export class DittoConfig {
@@ -110,6 +111,10 @@ export class DittoCOD {
 
     public isRunning(): boolean {
         return this.running
+    }
+
+    public store(): Store {
+        return this.ditto!.store
     }
 
     // Call before using this instance

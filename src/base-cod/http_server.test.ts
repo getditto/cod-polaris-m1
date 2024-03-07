@@ -2,6 +2,7 @@ import axios from 'axios'
 import { HttpServer } from './http_server.js'
 import { Config } from '../common-cod/config.js'
 import { DittoCOD } from '../ditto_cod.js'
+import { TestDittoCOD } from '../test_ditto_cod.js'
 import {
     Geometry,
     Timestamp,
@@ -15,11 +16,23 @@ import { TrialModel } from '../common-cod/trial_model.js'
 
 class TestFixture {
     private httpServer: HttpServer | null = null
+    dittoCod: DittoCOD
+    config: Config
+    constructor() {
+        this.config = new Config('./base-config.json.example')
+        if (this.config.isUnitTestConfig()) {
+            console.warn(this.config.unitTestWarning())
+            this.dittoCod = new TestDittoCOD(this.config.toDittoConfig())
+        } else {
+            this.dittoCod = new DittoCOD(this.config.toDittoConfig())
+        }
+    }
+
     async start() {
-        const config = new Config('./base-config.json.example')
-        const dittoCod = new DittoCOD(config.toDittoConfig())
-        const trialModel = new TrialModel(dittoCod, config)
-        this.httpServer = new HttpServer(trialModel, config)
+        const trialModel = new TrialModel(this.dittoCod, this.config)
+        await this.dittoCod.start()
+        await trialModel.start()
+        this.httpServer = new HttpServer(trialModel, this.config)
         await this.httpServer!.start()
     }
     async stop() {
