@@ -6,29 +6,7 @@ import {
     TransportConfig,
     Store,
 } from '@dittolive/ditto'
-
-export class DittoConfig {
-    useBle: boolean
-    useLan: boolean
-    bpUrl: string = ''
-    appId: string
-    sharedKey: string = ''
-    appToken: string = ''
-    offlineToken: string = ''
-    persistDir: string
-
-    constructor(
-        useBle: boolean,
-        useLan: boolean,
-        appId: string,
-        persistDir: string = './ditto'
-    ) {
-        this.useBle = useBle
-        this.useLan = useLan
-        this.appId = appId
-        this.persistDir = persistDir
-    }
-}
+import { DittoConfig } from './ditto_config.js'
 
 export class DittoCOD {
     config: DittoConfig
@@ -76,7 +54,7 @@ export class DittoCOD {
         }
         const bpaUrl = this.config.bpUrl
         const appId = this.config.appId
-        console.log(`BPA_URL: ${bpaUrl}`)
+        const cloudSync = this.config.cloudSync
 
         let identity: Identity
         // TODO use empty string instead of NA?
@@ -91,6 +69,7 @@ export class DittoCOD {
                 type: 'onlinePlayground',
                 appID: appId,
                 token: this.config.appToken,
+                enableDittoCloudSync: cloudSync,
             }
         } else if (bpaUrl == 'offline') {
             identity = {
