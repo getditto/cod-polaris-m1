@@ -48,7 +48,15 @@ export class HttpServer {
         const num_targets = 3
         const geom = new Geometry()
         rep.writeHead(HttpStatus.Ok, CONTENT_TYPE_JSON)
-        rep.end(new v0TrialStart(ts, id, num_targets, geom).serialize())
+        rep.end(
+            new v0TrialStart(
+                ts,
+                id,
+                num_targets,
+                geom.type,
+                geom.coordinates
+            ).serialize()
+        )
     }
 
     // Long-poll GET waiting for start command

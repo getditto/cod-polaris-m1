@@ -92,7 +92,7 @@ describe('base trial start', () => {
         [-49.91, 32.101],
         [-50.12, 30.12],
     ])
-    const startMsg = new v0TrialStart(ts, id, n, geom)
+    const startMsg = new v0TrialStart(ts, id, n, geom.type, geom.coordinates)
     const postData = startMsg.serialize()
     test('valid trial start', async () => {
         const url = `http://localhost:${fixture.getPort()}/api/trial_start`
