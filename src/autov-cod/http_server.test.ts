@@ -2,7 +2,7 @@ import axios from 'axios'
 import { HttpServer } from './http_server.js'
 import { Config } from '../common-cod/config.js'
 import { DittoCOD } from '../ditto_cod.js'
-import { HttpStatus } from '../common-cod/http_base.js'
+import { HttpStatus } from '../common-cod/basic_http.js'
 import { TrialModel } from '../common-cod/trial_model.js'
 
 class TestFixture {

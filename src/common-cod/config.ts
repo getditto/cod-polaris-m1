@@ -1,6 +1,6 @@
 import { ConfigBase } from '../config_base.js'
 import { DEFAULT_TEST_DURATION_SEC } from '../default.js'
-import { HttpConfig } from './http_base.js'
+import { HttpConfig } from './basic_http.js'
 
 export class Config extends ConfigBase {
     constructor(configFilename: string) {
