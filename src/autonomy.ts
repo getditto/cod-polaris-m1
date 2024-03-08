@@ -8,7 +8,7 @@ enum C2Command {
 }
 
 const C2_START_DELAY_SEC = 1 // How long between startup and mission start
-const C2_MISSION_DURATION_SEC = 3 // Time between mission start and end
+const C2_MISSION_DURATION_SEC = 1 // Time between mission start and end
 
 // Toy implementation of a C2 interface
 class C2 {
