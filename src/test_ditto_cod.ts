@@ -42,9 +42,10 @@ export class TestStore extends Store {
         super(d)
         console.info('** Using stubbed-out Ditto.Store for unit testing **')
     }
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     execute(
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         _query: string,
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         _args?: DQLQueryArguments | undefined
     ): Promise<QueryResult> {
         return Promise.resolve({} as QueryResult)

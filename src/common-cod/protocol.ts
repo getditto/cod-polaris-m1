@@ -107,6 +107,13 @@ export class Geometry {
         geom.coordinates = parsed.coordinates
         return geom
     }
+
+    public static fromFields(type: string, coords: CoordValueV0): Geometry {
+        const g = new Geometry()
+        g.type = type as GeomTypeV0
+        g.coordinates = coords
+        return g
+    }
 }
 
 export class TrialId {
@@ -258,3 +265,5 @@ export class v0TrialWait {
         return init
     }
 }
+
+export type v0TrialObj = v0TrialStart | v0TrialEnd | v0TrialWait

@@ -7,7 +7,7 @@ import {
     TrialId,
     v0TrialEnd,
     v0TrialStart,
-    v0TrialWait,
+    v0TrialObj,
 } from '../common-cod/protocol.js'
 import { CondPromise } from '../util/cond_promise.js'
 import {
@@ -34,9 +34,9 @@ export class HttpServer {
 
     // GET of current trial state
     private async handleState(rep: ServerResponse) {
-        // XXX TODO implement
+        const obj: v0TrialObj = await this.trialModel.pollTrial()
         rep.writeHead(HttpStatus.Ok, CONTENT_TYPE_JSON)
-        rep.end(new v0TrialWait().serialize())
+        rep.end(obj.serialize())
     }
 
     // Long-poll GET waiting for start command
