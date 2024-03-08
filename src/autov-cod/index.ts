@@ -2,6 +2,7 @@ import { DittoCOD } from '../ditto_cod.js'
 import { Config } from '../common-cod/config.js'
 import { HttpServer } from './http_server.js'
 import { TrialModel } from '../common-cod/trial_model.js'
+import { signalOrTimeout } from '../util/util.js'
 
 function usage() {
     console.log('Usage: node index.js [config-filename]')
@@ -34,6 +35,7 @@ async function main() {
 
     const httpServer = new HttpServer(trialModel, config)
     await httpServer.start()
+    await signalOrTimeout(0)
 }
 
 // async main boilerplate
