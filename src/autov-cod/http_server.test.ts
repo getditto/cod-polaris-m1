@@ -3,13 +3,15 @@ import { HttpServer } from './http_server.js'
 import { Config } from '../common-cod/config.js'
 import { DittoCOD } from '../ditto_cod.js'
 import { HttpStatus } from '../common-cod/http_base.js'
+import { TrialModel } from '../common-cod/trial_model.js'
 
 class TestFixture {
     private httpServer: HttpServer | null = null
     async start() {
         const config = new Config('./autov-config.json.example')
         const dittoCod = new DittoCOD(config.toDittoConfig())
-        this.httpServer = new HttpServer(dittoCod, config)
+        const trialModel = new TrialModel(dittoCod, config)
+        this.httpServer = new HttpServer(trialModel, config)
         await this.httpServer!.start()
     }
     async stop() {
