@@ -3,7 +3,7 @@ import { Config } from '../common-cod/config.js'
 import { HttpServer } from './http_server.js'
 import { TrialModel } from '../common-cod/trial_model.js'
 import { signalOrTimeout } from '../util/util.js'
-import { setLogLevelStr } from '../logger.js'
+import { LogLevel, getLogLevel, setLogLevelStr } from '../logger.js'
 
 function usage() {
     console.log('Usage: node index.js [config-filename]')
@@ -32,7 +32,7 @@ async function main() {
 
     const dittoCod = new DittoCOD(config.toDittoConfig())
     const trialModel = new TrialModel(dittoCod, config)
-    await dittoCod.start()
+    await dittoCod.start(getLogLevel() == LogLevel.debug)
     await trialModel.start()
 
     const httpServer = new HttpServer(trialModel, config)
