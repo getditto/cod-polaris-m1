@@ -17,6 +17,7 @@
 
     "// comment2": "Use 0 to run forever (until SIGINT)",
     "test-duration-sec": "60",
-    "consumer-webui": true
+    "consumer-webui": true,
+    "log-level": "warn"
   }
 }
