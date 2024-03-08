@@ -1,6 +1,5 @@
 import { IncomingMessage, ServerResponse } from 'node:http'
 
-import { DittoCOD } from '../ditto_cod.js'
 import { Config } from '../common-cod/config.js'
 import {
     Geometry,
@@ -17,16 +16,17 @@ import {
     HttpStatus,
     normalizeUrl,
 } from '../common-cod/http_base.js'
+import { TrialModel } from '../common-cod/trial_model.js'
 
 export class HttpServer {
-    dittoCod: DittoCOD
+    trialModel: TrialModel
     config: Config
     base: HttpBase
     // A promise that resolves after we receive a 'close' event from http.Server
     serverFinished: CondPromise
 
-    constructor(dittoCod: DittoCOD, config: Config) {
-        this.dittoCod = dittoCod
+    constructor(trialModel: TrialModel, config: Config) {
+        this.trialModel = trialModel
         this.config = config
         this.base = new HttpBase(config.toHttpConfig())
         this.serverFinished = new CondPromise()
