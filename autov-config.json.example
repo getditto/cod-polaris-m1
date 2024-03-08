@@ -10,6 +10,7 @@
     "bpa-url": "portal",
 
     "test-duration-sec": "60",
-    "http-port": "8081"
+    "http-port": "8081",
+    "log-level": "info"
   }
 }

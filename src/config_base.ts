@@ -14,6 +14,7 @@ export class ConfigBase {
     // Anything missing will be replaced with empty string
     strDefaults: Map<string, string | null> = new Map([
         ['ditto:persist-dir', './ditto'],
+        ['ditto:log_level', 'info'],
     ])
 
     // Add all SHOUTY_KEYS here, by type
@@ -25,6 +26,7 @@ export class ConfigBase {
         'SHARED_KEY',
         'BPA_URL',
         'PERSIST_DIR',
+        'LOG_LEVEL',
     ]
 
     // Helper methods for subclass customization

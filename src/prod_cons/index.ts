@@ -8,6 +8,7 @@ import { Consumer } from './consumer.js'
 import { ImageConfig } from '../camera.js'
 import { signalOrTimeout, sleep } from '../util/util.js'
 import { DittoCOD } from '../ditto_cod.js'
+import { setLogLevelStr } from '../logger.js'
 
 function usage() {
     console.log('Usage: node index.js [produce | consume]')
@@ -33,6 +34,7 @@ async function main() {
     }
 
     const config = new Config('./config.json')
+    setLogLevelStr(config.getStr('LOG_LEVEL'))
     const dconfig = config.toDittoConfig()
     if (dconfig.persistDir == '') {
         dconfig.persistDir = mode == Mode.Producer ? './ditto-p' : './ditto-c'

@@ -10,6 +10,7 @@
     "bpa-url": "portal",
 
     "test-duration-sec": "60",
-    "http-port": "8082"
+    "http-port": "8082",
+    "log-level": "info"
   }
 }
