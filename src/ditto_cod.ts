@@ -5,6 +5,7 @@ import {
     Identity,
     TransportConfig,
     Store,
+    Observer,
 } from '@dittolive/ditto'
 import { DittoConfig } from './ditto_config.js'
 
@@ -14,6 +15,8 @@ export class DittoCOD {
     identity: Identity
     transportConf: TransportConfig
     private running: boolean
+    private transportObserver: Observer | null = null
+    private presence: Observer | null = null
 
     constructor(config: DittoConfig) {
         this.config = config
@@ -85,7 +88,44 @@ export class DittoCOD {
                 customAuthURL: bpaUrl,
             }
         }
+        console.debug('identity: ', identity)
         return identity
+    }
+
+    private startTransportLogging() {
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        this.transportObserver = this.ditto!.observeTransportConditions(
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
+            (condition, _source) => {
+                if (condition === 'BLEDisabled') {
+                    console.log('BLE disabled')
+                } else if (condition === 'NoBLECentralPermission') {
+                    console.log('Permission missing for BLE')
+                } else if (condition === 'NoBLEPeripheralPermission') {
+                    console.log('Permissions missing for BLE')
+                }
+            }
+        )
+        this.presence = this.ditto!.presence.observe((graph) => {
+            if (graph.remotePeers.length != 0) {
+                graph.remotePeers.forEach((peer) => {
+                    console.log(
+                        'peer connection: ',
+                        peer.deviceName,
+                        peer.connections[0].connectionType
+                    )
+                })
+            }
+        })
+    }
+
+    private stopTransportLogging() {
+        if (this.transportObserver != null) {
+            this.transportObserver.stop()
+            this.presence!.stop()
+            this.transportObserver = null
+            this.presence = null
+        }
     }
 
     public isRunning(): boolean {
@@ -97,7 +137,7 @@ export class DittoCOD {
     }
 
     // Call before using this instance
-    async start(): Promise<void> {
+    async start(logConnectivity: boolean = false): Promise<void> {
         await init()
         console.log(`Starting cod-polaris-m1...`)
         this.ditto = new Ditto(this.identity, this.config.persistDir)
@@ -107,20 +147,9 @@ export class DittoCOD {
             console.debug('--> Setting offline only license..')
             this.ditto.setOfflineOnlyLicenseToken(this.config.offlineToken)
         }
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        const _transportConditionsObserver =
-            this.ditto!.observeTransportConditions(
-                // eslint-disable-next-line @typescript-eslint/no-unused-vars
-                (condition, _source) => {
-                    if (condition === 'BLEDisabled') {
-                        console.log('BLE disabled')
-                    } else if (condition === 'NoBLECentralPermission') {
-                        console.log('Permission missing for BLE')
-                    } else if (condition === 'NoBLEPeripheralPermission') {
-                        console.log('Permissions missing for BLE')
-                    }
-                }
-            )
+        if (logConnectivity) {
+            this.startTransportLogging()
+        }
 
         this.ditto.setTransportConfig(this.transportConf)
         this.ditto.startSync()
@@ -129,6 +158,7 @@ export class DittoCOD {
 
     // Call before exiting
     async stop(): Promise<void> {
+        this.stopTransportLogging()
         this.ditto!.stopSync()
         this.running = false
         await this.ditto!.close()

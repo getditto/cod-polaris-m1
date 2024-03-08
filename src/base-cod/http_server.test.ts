@@ -13,6 +13,7 @@ import {
 } from '../common-cod/protocol.js'
 import { HttpStatus } from '../common-cod/basic_http.js'
 import { TrialModel } from '../common-cod/trial_model.js'
+import { LogLevel, getLogLevel } from '../logger.js'
 
 class TestFixture {
     private httpServer: HttpServer | null = null
@@ -31,7 +32,7 @@ class TestFixture {
 
     async start() {
         this.trialModel = new TrialModel(this.dittoCod, this.config)
-        await this.dittoCod.start()
+        await this.dittoCod.start(getLogLevel() == LogLevel.debug)
         await this.trialModel!.start()
         this.httpServer = new HttpServer(this.trialModel!, this.config)
         await this.httpServer!.start()

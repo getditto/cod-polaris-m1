@@ -5,6 +5,7 @@ import { DittoCOD } from '../ditto_cod.js'
 import { HttpStatus } from '../common-cod/basic_http.js'
 import { TrialModel } from '../common-cod/trial_model.js'
 import { TestDittoCOD } from '../test_ditto_cod.js'
+import { LogLevel, getLogLevel } from '../logger.js'
 
 // TODO factor out common test fixture for Base and Autov http services
 class TestFixture {
@@ -23,7 +24,7 @@ class TestFixture {
     }
     async start() {
         this.trialModel = new TrialModel(this.dittoCod, this.config)
-        await this.dittoCod.start()
+        await this.dittoCod.start(getLogLevel() == LogLevel.debug)
         await this.trialModel!.start()
         this.httpServer = new HttpServer(this.trialModel!, this.config)
         await this.httpServer!.start()

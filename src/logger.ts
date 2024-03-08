@@ -15,10 +15,16 @@ function shouldLog(level: LogLevel): boolean {
     return ord.indexOf(level) >= ord.indexOf(global.loggerLevel)
 }
 
+export function getLogLevel(): LogLevel {
+    // @ts-expect-error global implicitly any
+    return global.loggerLevel
+}
+
 export function setLogLevel(level: LogLevel) {
     // @ts-expect-error global implicitly any
     global.loggerLevel = level
 }
+
 export function setLogLevelStr(levelStr?: string) {
     if (levelStr != null) {
         switch (levelStr!.toLowerCase()) {

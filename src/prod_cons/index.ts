@@ -8,7 +8,7 @@ import { Consumer } from './consumer.js'
 import { ImageConfig } from '../camera.js'
 import { signalOrTimeout, sleep } from '../util/util.js'
 import { DittoCOD } from '../ditto_cod.js'
-import { setLogLevelStr } from '../logger.js'
+import { LogLevel, getLogLevel, setLogLevelStr } from '../logger.js'
 
 function usage() {
     console.log('Usage: node index.js [produce | consume]')
@@ -41,7 +41,7 @@ async function main() {
     }
 
     const dittoCod = new DittoCOD(dconfig)
-    await dittoCod.start()
+    await dittoCod.start(getLogLevel() == LogLevel.debug)
 
     // Console out the peers found
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
