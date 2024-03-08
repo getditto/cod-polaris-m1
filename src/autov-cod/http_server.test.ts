@@ -4,18 +4,38 @@ import { Config } from '../common-cod/config.js'
 import { DittoCOD } from '../ditto_cod.js'
 import { HttpStatus } from '../common-cod/basic_http.js'
 import { TrialModel } from '../common-cod/trial_model.js'
+import { TestDittoCOD } from '../test_ditto_cod.js'
 
+// TODO factor out common test fixture for Base and Autov http services
 class TestFixture {
     private httpServer: HttpServer | null = null
+    dittoCod: DittoCOD
+    config: Config
+    trialModel: TrialModel | null = null
+    constructor() {
+        this.config = new Config('./autov-config.json.example')
+        if (this.config.isUnitTestConfig()) {
+            console.warn(this.config.unitTestWarning())
+            this.dittoCod = new TestDittoCOD(this.config.toDittoConfig())
+        } else {
+            this.dittoCod = new DittoCOD(this.config.toDittoConfig())
+        }
+    }
     async start() {
-        const config = new Config('./autov-config.json.example')
-        const dittoCod = new DittoCOD(config.toDittoConfig())
-        const trialModel = new TrialModel(dittoCod, config)
-        this.httpServer = new HttpServer(trialModel, config)
+        this.trialModel = new TrialModel(this.dittoCod, this.config)
+        await this.dittoCod.start()
+        await this.trialModel!.start()
+        this.httpServer = new HttpServer(this.trialModel!, this.config)
         await this.httpServer!.start()
     }
     async stop() {
         await this.httpServer!.stop()
+        await this.trialModel!.stop()
+        await this.dittoCod.stop()
+    }
+
+    getPort(): number {
+        return this.httpServer!.base.config.port
     }
 }
 
@@ -30,22 +50,26 @@ afterAll(async () => {
 })
 
 test('http sanity', async () => {
-    await axios.get('http://localhost:8081/api/trial').then((res) => {
-        expect(res.status).toBe(HttpStatus.Ok)
-        const obj = res.data
-        expect(obj).toHaveProperty('version')
-        expect(obj.version).toBe(0)
-        expect(obj).toHaveProperty('name')
-        expect(obj.name).toBe('Wait')
-        expect(obj).toHaveProperty('timestamp')
-        expect(obj.timestamp).toMatch(/\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}.*Z/)
-        console.log('Validated GET /api/trial/ response from server')
-    })
+    await axios
+        .get(`http://localhost:${fixture.getPort()}/api/trial`)
+        .then((res) => {
+            expect(res.status).toBe(HttpStatus.Ok)
+            const obj = res.data
+            expect(obj).toHaveProperty('version')
+            expect(obj.version).toBe(0)
+            expect(obj).toHaveProperty('name')
+            expect(obj.name).toBe('Wait')
+            expect(obj).toHaveProperty('timestamp')
+            expect(obj.timestamp).toMatch(
+                /\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}.*Z/
+            )
+            console.log('Validated GET /api/trial/ response from server')
+        })
 })
 
 test('http bad trial id', async () => {
     await axios
-        .get('http://localhost:8081/api/trial/0.2.3/start')
+        .get(`http://localhost:${fixture.getPort()}/api/trial/0.2.3/start`)
         .then((res) => {
             console.info('Response:', res)
         })
