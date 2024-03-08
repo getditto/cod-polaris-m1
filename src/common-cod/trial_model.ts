@@ -11,7 +11,7 @@ import {
     Geometry,
     v0TrialObj,
 } from './protocol.js'
-import { Store } from '@dittolive/ditto'
+import { Store, SyncSubscription } from '@dittolive/ditto'
 
 export const COLLECTION = 'trials'
 export const MODEL_VERSION = 0
@@ -21,6 +21,7 @@ export class TrialModel {
     dittoCod: DittoCOD
     config: Config
     store: Store | null = null
+    trialSub: SyncSubscription | null = null
     constructor(dittoCod: DittoCOD, config: Config) {
         this.dittoCod = dittoCod
         this.config = config
@@ -39,39 +40,57 @@ export class TrialModel {
     }
 
     async startTrial(v0Start: v0TrialStart) {
-        console.debug('TrialModel start: ', v0Start)
+        console.debug('-> start: ', v0Start)
         const doc = this.startV0ToDocV0(v0Start)
-        await this.store!.execute(
+        const q =
             `INSERT INTO ${COLLECTION} DOCUMENTS (:doc) ` +
-                'ON ID CONFLICT DO UPDATE',
-            { doc }
-        )
+            'ON ID CONFLICT DO UPDATE'
+        console.debug(`startTrial: ${q}`)
+        await this.store!.execute(q, { doc: doc })
         console.debug('-> ', doc)
     }
 
     async endTrial(v0End: v0TrialEnd) {
-        console.debug('TrialModel end: ', v0End)
+        console.debug('-> end: ', v0End)
         const doc = {
             id: v0End.trial_id.toString(),
             name: v0End.name,
             timestamp: v0End.timestamp.toString(),
         }
-        await this.store!.execute(
+        const q =
             `UPDATE ${COLLECTION} ` +
-                'SET name = :name, timestamp = :timestamp ' +
-                'WHERE _id = :id',
-            { doc }
-        )
+            'SET name = :name, timestamp = :timestamp ' +
+            'WHERE _id = :id'
+        console.debug(`endTrial: ${q}`)
+        await this.store!.execute(q, doc)
         console.debug('-> ', doc)
     }
 
+    private trialsQuery(limit: number | null = null): string {
+        let q = `SELECT * FROM ${COLLECTION} ORDER BY timestamp`
+        if (limit != null) {
+            q += ` DESC LIMIT ${limit}`
+        }
+        return q
+    }
+
+    private async ensureSubscribed() {
+        if (this.trialSub == null) {
+            const sync = this.dittoCod.ditto!.sync
+            const q = this.trialsQuery()
+            console.debug(`Subscribing: ${q}`)
+            this.trialSub = sync.registerSubscription(q)
+        }
+    }
+
     async pollTrial(): Promise<v0TrialObj> {
+        this.ensureSubscribed()
         // TODO validate timestamp ordering gets latest state
         // Might want to get all results, sort by date, and log a warning if
         // the sorting by _id (trial_id) doesn't match.
-        const res = await this.store!.execute(
-            `SELECT * FROM ${COLLECTION} ORDER BY timestamp DESC LIMIT 1`
-        )
+        const q = this.trialsQuery(1)
+        console.debug(`pollTrial: ${q}`)
+        const res = await this.store!.execute(q)
         if (res.items.length == 0) {
             console.info('No trials created yet -> Wait')
             return new v0TrialWait()
@@ -112,6 +131,9 @@ export class TrialModel {
     }
 
     async stop() {
-        // no-op for now
+        if (this.trialSub != null) {
+            this.trialSub.cancel()
+            this.trialSub = null
+        }
     }
 }
