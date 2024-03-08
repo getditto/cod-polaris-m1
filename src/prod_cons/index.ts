@@ -108,7 +108,7 @@ async function main() {
     if (signal) {
         console.info('Exiting due to signal..')
     }
-    dittoCod.stop()
+    await dittoCod.stop()
 }
 
 main()
