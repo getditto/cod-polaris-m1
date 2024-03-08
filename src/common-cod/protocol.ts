@@ -27,10 +27,15 @@ export class Timestamp {
 // Note: rest API spec uses the fields of this object directly (flattened)
 //   instead of including the object in its JSON. i.e. remove surrounding { }
 // Points are currently 2-d only (no elevation supported)
+export type PointV0 = Array<number>
+export type PolygonV0 = Array<PointV0>
+export type CoordValueV0 = PointV0 | PolygonV0
+export type GeomTypeV0 = 'Point' | 'Polygon'
+
 export class Geometry {
-    type: string = ''
+    type: GeomTypeV0 = 'Point'
     // lat-long decimal degrees in WGS84 coordinate system
-    coordinates: Array<number | Array<number>> = []
+    coordinates: CoordValueV0 = []
 
     public static point(longitude: number, latitude: number) {
         const geom = new Geometry()
@@ -39,7 +44,7 @@ export class Geometry {
         return geom
     }
 
-    public static polygon(coords: Array<Array<number>>): Geometry {
+    public static polygon(coords: PolygonV0): Geometry {
         const geom = new Geometry()
         geom.type = 'Polygon'
         geom.coordinates = coords
@@ -129,28 +134,32 @@ export class v0TrialStart {
     timestamp: Timestamp
     trial_id: TrialId
     num_targets: number
-    coordinates: Geometry
+    type: GeomTypeV0
+    coordinates: CoordValueV0
 
     constructor(
         ts: Timestamp,
         trial_id: TrialId,
         num_targets: number,
-        coordinates: Geometry
+        type: GeomTypeV0,
+        coordinates: CoordValueV0
     ) {
         this.timestamp = ts
         this.trial_id = trial_id
         this.num_targets = num_targets
+        this.type = type
         this.coordinates = coordinates
     }
 
     // control serialization
-    private toObject(): Record<string, string | number | Geometry> {
+    private toObject(): Record<string, string | number | CoordValueV0> {
         return {
             version: this.version,
             name: this.name,
             timestamp: this.timestamp.toString(),
             trial_id: this.trial_id.toString(),
             num_targets: this.num_targets,
+            type: this.type,
             coordinates: this.coordinates, // TODO check serialization (JSON)
         }
     }
@@ -173,6 +182,7 @@ export class v0TrialStart {
             parsed.timestamp,
             parsed.trial_id,
             parsed.num_targets,
+            parsed.type,
             parsed.coordinates
         )
         return start

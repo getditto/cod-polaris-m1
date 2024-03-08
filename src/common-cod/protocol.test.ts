@@ -27,7 +27,13 @@ test('v0 start serde', () => {
     const id = TrialId.fromString('1.2.3')
     const numTargets = 4
     const geom = new Geometry()
-    const src = new v0TrialStart(ts, id, numTargets, geom)
+    const src = new v0TrialStart(
+        ts,
+        id,
+        numTargets,
+        geom.type,
+        geom.coordinates
+    )
     const str = src.serialize() // serialize
     const roundTrip = v0TrialStart.fromString(str) // deserialize
     expect(roundTrip).toEqual(src)
