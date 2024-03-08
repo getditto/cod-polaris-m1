@@ -31,7 +31,7 @@ export function normalizeUrl(url: string): string {
 export const JSON_CONTENT = 'application/json; charset=utf-8'
 export const CONTENT_TYPE_JSON = { 'Content-Type': JSON_CONTENT }
 
-export class HttpBase {
+export class BasicHttp {
     // TODO factor out http-specific config
     config: HttpConfig
     server: http.Server

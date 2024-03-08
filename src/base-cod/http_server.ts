@@ -7,10 +7,10 @@ import {
 } from '../common-cod/protocol.js'
 import {
     CONTENT_TYPE_JSON,
-    HttpBase,
+    BasicHttp,
     HttpStatus,
     normalizeUrl,
-} from '../common-cod/http_base.js'
+} from '../common-cod/basic_http.js'
 import { TrialModel } from '../common-cod/trial_model.js'
 
 const URL_BASE = '/api'
@@ -20,12 +20,12 @@ const URL_TRIAL_END = URL_BASE + '/trial_end'
 export class HttpServer {
     trialModel: TrialModel
     config: Config
-    base: HttpBase
+    base: BasicHttp
 
     constructor(trialModel: TrialModel, config: Config) {
         this.trialModel = trialModel
         this.config = config
-        this.base = new HttpBase(config.toHttpConfig())
+        this.base = new BasicHttp(config.toHttpConfig())
     }
 
     private async handleStart(

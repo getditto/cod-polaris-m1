@@ -11,7 +11,7 @@ import {
     v0TrialStart,
     v0TrialWait,
 } from '../common-cod/protocol.js'
-import { HttpStatus } from '../common-cod/http_base.js'
+import { HttpStatus } from '../common-cod/basic_http.js'
 import { TrialModel } from '../common-cod/trial_model.js'
 
 class TestFixture {
