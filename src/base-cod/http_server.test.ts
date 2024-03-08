@@ -18,6 +18,7 @@ class TestFixture {
     private httpServer: HttpServer | null = null
     dittoCod: DittoCOD
     config: Config
+    trialModel: TrialModel | null = null
     constructor() {
         this.config = new Config('./base-config.json.example')
         if (this.config.isUnitTestConfig()) {
@@ -29,14 +30,16 @@ class TestFixture {
     }
 
     async start() {
-        const trialModel = new TrialModel(this.dittoCod, this.config)
+        this.trialModel = new TrialModel(this.dittoCod, this.config)
         await this.dittoCod.start()
-        await trialModel.start()
-        this.httpServer = new HttpServer(trialModel, this.config)
+        await this.trialModel!.start()
+        this.httpServer = new HttpServer(this.trialModel!, this.config)
         await this.httpServer!.start()
     }
     async stop() {
         await this.httpServer!.stop()
+        await this.trialModel!.stop()
+        await this.dittoCod.stop()
     }
 
     getPort(): number {

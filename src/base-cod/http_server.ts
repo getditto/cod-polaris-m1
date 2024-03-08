@@ -34,7 +34,8 @@ export class HttpServer {
         rep: ServerResponse
     ) {
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        const _tStart = v0TrialStart.fromString(body)
+        const tStart = v0TrialStart.fromString(body)
+        await this.trialModel.startTrial(tStart)
         rep.writeHead(HttpStatus.Created)
         rep.end()
     }
@@ -46,7 +47,8 @@ export class HttpServer {
         rep: ServerResponse
     ) {
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        const _tEnd = v0TrialEnd.fromString(body)
+        const tEnd = v0TrialEnd.fromString(body)
+        await this.trialModel.endTrial(tEnd)
         rep.writeHead(HttpStatus.Created)
         rep.end()
     }
