@@ -101,6 +101,7 @@ export class DittoCOD {
         await init()
         console.log(`Starting cod-polaris-m1...`)
         this.ditto = new Ditto(this.identity, this.config.persistDir)
+        await this.ditto.disableSyncWithV3()
         const bpaUrl = this.config.bpUrl
         if (bpaUrl == 'NA' || bpaUrl == 'offline') {
             console.debug('--> Setting offline only license..')
@@ -130,5 +131,6 @@ export class DittoCOD {
     async stop(): Promise<void> {
         this.ditto!.stopSync()
         this.running = false
+        await this.ditto!.close()
     }
 }
