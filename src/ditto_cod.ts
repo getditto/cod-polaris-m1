@@ -6,6 +6,8 @@ import {
     TransportConfig,
     Store,
     Observer,
+    DQLQueryArguments,
+    SyncSubscription,
 } from '@dittolive/ditto'
 import { DittoConfig } from './ditto_config.js'
 
@@ -134,6 +136,17 @@ export class DittoCOD {
 
     public store(): Store {
         return this.ditto!.store
+    }
+
+    isUnitTest() {
+        return false
+    }
+
+    registerSubscription(
+        query: string,
+        args?: DQLQueryArguments
+    ): SyncSubscription {
+        return this.ditto!.sync.registerSubscription(query, args)
     }
 
     // Call before using this instance

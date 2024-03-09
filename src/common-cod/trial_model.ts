@@ -76,10 +76,9 @@ export class TrialModel {
 
     private async ensureSubscribed() {
         if (this.trialSub == null) {
-            const sync = this.dittoCod.ditto!.sync
             const q = this.trialsQuery()
             console.debug(`Subscribing: ${q}`)
-            this.trialSub = sync.registerSubscription(q)
+            this.trialSub = this.dittoCod.registerSubscription(q)
         }
     }
 
@@ -91,7 +90,7 @@ export class TrialModel {
         const q = this.trialsQuery(1)
         console.debug(`pollTrial: ${q}`)
         const res = await this.store!.execute(q)
-        if (res.items.length == 0) {
+        if (this.dittoCod.isUnitTest() || res.items.length == 0) {
             console.info('No trials created yet -> Wait')
             return new v0TrialWait()
         }

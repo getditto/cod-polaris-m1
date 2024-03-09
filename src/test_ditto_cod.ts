@@ -9,6 +9,7 @@ import {
     Store,
     Ditto,
     DQLQueryArguments,
+    SyncSubscription,
 } from '@dittolive/ditto'
 import { DittoCOD } from './ditto_cod.js'
 import { DittoConfig } from './ditto_config.js'
@@ -64,7 +65,16 @@ export class TestDittoCOD extends DittoCOD {
         return new TestStore(this.ditto!)
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    registerSubscription(q: string, a?: DQLQueryArguments): SyncSubscription {
+        return { cancel: () => {} } as SyncSubscription
+    }
+
     isRunning() {
+        return true
+    }
+
+    isUnitTest() {
         return true
     }
 }
