@@ -13,8 +13,9 @@ import {
 } from '../common-cod/protocol.js'
 import { HttpStatus } from '../common-cod/basic_http.js'
 import { TrialModel } from '../common-cod/trial_model.js'
-import { LogLevel, getLogLevel } from '../logger.js'
+import { LogLevel, getLogLevel, setLogLevel } from '../logger.js'
 
+setLogLevel(LogLevel.debug)
 class TestFixture {
     private httpServer: HttpServer | null = null
     dittoCod: DittoCOD

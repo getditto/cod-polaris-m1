@@ -5,8 +5,9 @@ import { DittoCOD } from '../ditto_cod.js'
 import { HttpStatus } from '../common-cod/basic_http.js'
 import { TrialModel } from '../common-cod/trial_model.js'
 import { TestDittoCOD } from '../test_ditto_cod.js'
-import { LogLevel, getLogLevel } from '../logger.js'
+import { LogLevel, getLogLevel, setLogLevel } from '../logger.js'
 
+setLogLevel(LogLevel.debug)
 // TODO factor out common test fixture for Base and Autov http services
 class TestFixture {
     private httpServer: HttpServer | null = null
@@ -72,7 +73,7 @@ test('http bad trial id', async () => {
     await axios
         .get(`http://localhost:${fixture.getPort()}/api/trial/0.2.3/start`)
         .then((res) => {
-            console.info('Response:', res)
+            console.info('Response:', res.data)
         })
         .catch((err) => {
             expect(err.response.status).toBe(HttpStatus.BadRequest)
