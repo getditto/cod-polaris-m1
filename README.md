@@ -21,9 +21,10 @@ This is the base-facing side of `autov-cod`.
 `src/prod_cons/index.ts` a simple producer/consumer app including metadata and
 sensor (camera) communication and a simple HTTP UI which provides a "webcams
 over Ditto" demo.
-*Test Autonomous Vehicle*
 
-Work-in-progress test and prototyping support for autonomous vehicle (autov)
+*Peer-to-peer Autonomous Vehicle and AI Object Recognition*
+
+Work-in-progress test and prototyping support for autonomous vehicle
 integration experiments.
 
 ## Setup
