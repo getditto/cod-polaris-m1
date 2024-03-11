@@ -10,6 +10,7 @@ import {
     BasicHttp,
     HttpStatus,
     normalizeUrl,
+    requestData,
 } from '../common-cod/basic_http.js'
 import { TrialModel } from '../common-cod/trial_model.js'
 
@@ -65,43 +66,38 @@ export class HttpServer {
     }
 
     private async handlePost(req: IncomingMessage, rep: ServerResponse) {
-        let body = ''
-        req.on('data', (chunk) => {
-            body += chunk
-        })
-        req.on('end', async () => {
-            try {
-                const init = JSON.parse(body)
-                if (init.version != undefined && init.version != 0) {
-                    const err = `Unsupported version: ${init.version}`
-                    console.info(err)
-                    rep.writeHead(HttpStatus.BadRequest, CONTENT_TYPE_JSON)
-                    rep.end(err)
+        const body = await requestData(req)
+        try {
+            const init = JSON.parse(body)
+            if (init.version != undefined && init.version != 0) {
+                const err = `Unsupported version: ${init.version}`
+                console.info(err)
+                rep.writeHead(HttpStatus.BadRequest, CONTENT_TYPE_JSON)
+                rep.end(err)
+            } else {
+                if (init.name == 'Trial Start') {
+                    await this.handleStart(body, req, rep)
+                } else if (init.name == 'Trial End') {
+                    await this.handleEnd(body, req, rep)
+                } else if (init.name == 'Wait') {
+                    // This is not in the spec--but would be good to have a
+                    // side-effect free "ping" or "get status" endpoint to
+                    // sanity/health check the service
+                    await this.handleWait(body, req, rep)
                 } else {
-                    if (init.name == 'Trial Start') {
-                        await this.handleStart(body, req, rep)
-                    } else if (init.name == 'Trial End') {
-                        await this.handleEnd(body, req, rep)
-                    } else if (init.name == 'Wait') {
-                        // This is not in the spec--but would be good to have a
-                        // side-effect free "ping" or "get status" endpoint to
-                        // sanity/health check the service
-                        await this.handleWait(body, req, rep)
-                    } else {
-                        rep.writeHead(HttpStatus.BadRequest)
-                        rep.end()
-                    }
+                    rep.writeHead(HttpStatus.BadRequest)
+                    rep.end()
                 }
-            } catch (e) {
-                let msg = 'error handling POST'
-                if (e instanceof Error) {
-                    msg += ': ' + e.message
-                }
-                console.info(msg)
-                rep.writeHead(HttpStatus.UnprocessableEntity, CONTENT_TYPE_JSON)
-                rep.end(msg)
             }
-        })
+        } catch (e) {
+            let msg = 'error handling POST'
+            if (e instanceof Error) {
+                msg += ': ' + e.message
+            }
+            console.info(msg)
+            rep.writeHead(HttpStatus.UnprocessableEntity, CONTENT_TYPE_JSON)
+            rep.end(msg)
+        }
     }
 
     private async registerRoutes() {
