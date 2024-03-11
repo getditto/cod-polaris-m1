@@ -125,7 +125,7 @@ export class TrialModel {
     }
 
     async start() {
-        assert(this.dittoCod.isRunning(), 'Must start DittoCOD before Models')
+        assert(this.dittoCod.isRunning(), 'Must start DittoCOD before model.')
         this.store = this.dittoCod.store()
     }
 

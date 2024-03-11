@@ -115,8 +115,8 @@ test('telemetry serde', () => {
         [pt[0] - 0.0001, pt[1] + 0.002],
         pt,
     ]
-    src.phase_loc = Geometry.polygon(coords)
-    expect(src.phase_loc!.isValid()).toBe(true)
+    src.phase_loc = Geometry.polygon(coords).toObject()
+    expect(Geometry.isValidRecord(src.phase_loc!)).toBe(true)
     const str = src.serialize()
     const roundTrip = v0Telemetry.fromString(str)
     expect(roundTrip).toEqual(src)

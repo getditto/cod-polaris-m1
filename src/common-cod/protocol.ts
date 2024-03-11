@@ -31,6 +31,7 @@ export type PointV0 = Array<number>
 export type PolygonV0 = Array<PointV0>
 export type CoordValueV0 = PointV0 | PolygonV0
 export type GeomTypeV0 = 'Point' | 'Polygon'
+export type GeomRecordV0 = { [key: string]: GeomTypeV0 | CoordValueV0 }
 
 export class Geometry {
     type: GeomTypeV0 = 'Point'
@@ -50,39 +51,51 @@ export class Geometry {
         geom.coordinates = coords
         return geom
     }
-
-    // Runtime check that this is a valid type of geometry
-    public isValid(): boolean {
-        if (this.type == 'Point') {
-            if (
-                this.coordinates.length != 2 ||
-                Array.isArray(this.coordinates[0])
-            ) {
-                return false
+    // Return null if given record is valid v0 geometry, else return
+    // string describing the error.
+    public static validationError(g: GeomRecordV0): string | null {
+        if (g.type == 'Point') {
+            if (g.coordinates.length != 2 || Array.isArray(g.coordinates[0])) {
+                return 'Point geometry must contain 2 numbers'
             }
-        } else if (this.type == 'Polygon') {
+        } else if (g.type == 'Polygon') {
             // Minimum polygon points are a triangle + one closing point
             // repeating the first
-            if (this.coordinates.length < 4) {
-                return false
+            if (g.coordinates.length < 4) {
+                return 'Polygon must have at least 4 points'
             }
-            if (!Array.isArray(this.coordinates[0])) {
-                return false
+            if (!Array.isArray(g.coordinates[0])) {
+                return 'Polygon coordinates must be arrays'
             }
-            for (const coord of this.coordinates) {
+            for (const coord of g.coordinates) {
                 // type coercion
                 const arr = coord as Array<number>
                 if (arr.length != 2) {
-                    return false
+                    return 'Each point must be 2 numbers'
                 }
             }
+            const last = g.coordinates[g.coordinates.length - 1] as PointV0
+            const first = g.coordinates[0] as PointV0
+            if (first[0] != last[0] || first[1] != last[1]) {
+                console.info('first: ', first, ' != last: ', last)
+                return 'Polygon not closed: last point must equal first'
+            }
         } else {
-            return false
+            return `Invalid geometry type ${g.type}`
         }
-        return true
+        return null
     }
 
-    private toObject(): Record<string, string | CoordValueV0> {
+    public static isValidRecord(g: GeomRecordV0): boolean {
+        return Geometry.validationError(g) == null
+    }
+
+    // Runtime check that this is a valid type of geometry
+    public isValid(): boolean {
+        return Geometry.isValidRecord(this.toObject())
+    }
+
+    toObject(): GeomRecordV0 {
         return {
             type: this.type,
             coordinates: this.coordinates,
@@ -286,8 +299,11 @@ export class v0Telemetry {
     heading: number = -1
     behavior: string | undefined
     mission_phase: MissionPhaseV0 = 'wait'
-    phase_loc?: Geometry
-    private toObject(): Record<string, string | number | Geometry | undefined> {
+    phase_loc?: GeomRecordV0
+    private toObject(): Record<
+        string,
+        string | number | GeomRecordV0 | undefined
+    > {
         return {
             lon: this.lon,
             lat: this.lat,
@@ -324,5 +340,19 @@ export class v0Telemetry {
         t.mission_phase = parsed.mission_phase
         t.phase_loc = parsed.phase_loc
         return t
+    }
+
+    // Return null if object is valid, else return string describing the error.
+    validationError(): string | null {
+        if (this.heading < 0 || this.heading > 360) {
+            return 'Invalid heading ' + this.heading
+        }
+        if (this.id == '') {
+            return 'Empty id.'
+        }
+        if (this.phase_loc) {
+            return Geometry.validationError(this.phase_loc)
+        }
+        return null
     }
 }
