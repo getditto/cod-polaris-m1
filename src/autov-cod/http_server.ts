@@ -8,6 +8,7 @@ import {
     v0TrialEnd,
     v0TrialStart,
     v0TrialObj,
+    v0Telemetry,
 } from '../common-cod/protocol.js'
 import { CondPromise } from '../util/cond_promise.js'
 import {
@@ -15,18 +16,27 @@ import {
     BasicHttp,
     HttpStatus,
     normalizeUrl,
+    requestData,
 } from '../common-cod/basic_http.js'
 import { TrialModel } from '../common-cod/trial_model.js'
+import { assert } from 'node:console'
+import { TelemModel } from '../common-cod/telem_model.js'
 
 export class HttpServer {
     trialModel: TrialModel
+    telemModel: TelemModel
     config: Config
     base: BasicHttp
     // A promise that resolves after we receive a 'close' event from http.Server
     serverFinished: CondPromise
 
-    constructor(trialModel: TrialModel, config: Config) {
+    constructor(
+        trialModel: TrialModel,
+        telemModel: TelemModel,
+        config: Config
+    ) {
         this.trialModel = trialModel
+        this.telemModel = telemModel
         this.config = config
         this.base = new BasicHttp(config.toHttpConfig())
         this.serverFinished = new CondPromise()
@@ -69,12 +79,8 @@ export class HttpServer {
         rep.end(new v0TrialEnd(ts, id).serialize())
     }
 
-    private async router(req: IncomingMessage, res: ServerResponse) {
-        if (req.method !== 'GET') {
-            res.writeHead(HttpStatus.BadRequest)
-            res.end()
-            return
-        }
+    private async handleTrial(req: IncomingMessage, res: ServerResponse) {
+        assert(req.method === 'GET')
         const url = normalizeUrl(req.url ?? '')
         const toks = url.split('/').slice(1)
         if (toks.length >= 2 && toks[0] == 'api' && toks[1] == 'trial') {
@@ -91,9 +97,38 @@ export class HttpServer {
                     return this.handleEnd(trialId, res)
                 }
             }
+        }
+        res.writeHead(HttpStatus.NotFound)
+        res.end()
+    }
 
+    private async handleTelem(req: IncomingMessage, res: ServerResponse) {
+        assert(req.method === 'POST')
+        const url = normalizeUrl(req.url ?? '')
+        const toks = url.split('/').slice(1)
+        if (toks.length == 2 && toks[0] == 'api' && toks[1] == 'telemetry') {
+            const body = await requestData(req)
+            console.debug('Received telemetry:', body)
+            const v0Telem = v0Telemetry.fromString(body)
+            const err = v0Telem.validationError()
+            if (err) {
+                throw new Error(`Invalid telemetry: ${err}`)
+            }
+            this.telemModel.writeTelem(v0Telem)
+            // XXX TODO spec requires echoing back the object in the response body
+            res.writeHead(HttpStatus.Created)
+            res.end()
+        } else {
             res.writeHead(HttpStatus.NotFound)
             res.end()
+        }
+    }
+
+    private async router(req: IncomingMessage, res: ServerResponse) {
+        if (req.method === 'GET') {
+            return this.handleTrial(req, res)
+        } else if (req.method === 'POST') {
+            return this.handleTelem(req, res)
         }
     }
 
@@ -104,7 +139,7 @@ export class HttpServer {
                 this.router(req, res).catch((e) => {
                     console.info('BadRequest: ', e.message)
                     res.writeHead(HttpStatus.BadRequest)
-                    res.end()
+                    res.end(e.message)
                 })
             }
         )

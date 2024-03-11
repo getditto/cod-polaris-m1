@@ -6,6 +6,8 @@ import { HttpStatus } from '../common-cod/basic_http.js'
 import { TrialModel } from '../common-cod/trial_model.js'
 import { TestDittoCOD } from '../test_ditto_cod.js'
 import { LogLevel, getLogLevel, setLogLevel } from '../logger.js'
+import { TelemModel } from '../common-cod/telem_model.js'
+import { v0Telemetry } from '../common-cod/protocol.js'
 
 setLogLevel(LogLevel.debug)
 // TODO factor out common test fixture for Base and Autov http services
@@ -14,6 +16,7 @@ class TestFixture {
     dittoCod: DittoCOD
     config: Config
     trialModel: TrialModel | null = null
+    telemModel: TelemModel | null = null
     constructor() {
         this.config = new Config('./autov-config.json.example')
         if (this.config.isUnitTestConfig()) {
@@ -25,13 +28,20 @@ class TestFixture {
     }
     async start() {
         this.trialModel = new TrialModel(this.dittoCod, this.config)
+        this.telemModel = new TelemModel(this.dittoCod, this.config)
         await this.dittoCod.start(getLogLevel() == LogLevel.debug)
         await this.trialModel!.start()
-        this.httpServer = new HttpServer(this.trialModel!, this.config)
+        await this.telemModel!.start()
+        this.httpServer = new HttpServer(
+            this.trialModel!,
+            this.telemModel!,
+            this.config
+        )
         await this.httpServer!.start()
     }
     async stop() {
         await this.httpServer!.stop()
+        await this.telemModel!.stop()
         await this.trialModel!.stop()
         await this.dittoCod.stop()
     }
@@ -77,5 +87,50 @@ test('http bad trial id', async () => {
         })
         .catch((err) => {
             expect(err.response.status).toBe(HttpStatus.BadRequest)
+        })
+})
+
+test('telem sanity', async () => {
+    const p1 = '[-119.88577910,39.5277639]'
+    const telemStr =
+        '{"lon":-122.67648,"lat":45.52306,"alt":101,' +
+        '"timestamp":"2024-03-11T22:26:23.718Z","id":"test_vehicle1",' +
+        '"heading":92.312,"behavior":"some-algorithm","mission_phase":"find",' +
+        '"phase_loc":{"type":"Polygon","coordinates":[' +
+        p1 +
+        ',' +
+        '[-119.88577910818,39.5277639091],[-119.88077910818,39.5277639091],' +
+        '[-119.88077910818,39.5317639091],[-119.88576818351,39.5317649091],' +
+        p1 +
+        ']}}'
+
+    const telem = v0Telemetry.fromString(telemStr)
+    expect(telem).toBeDefined()
+    await axios
+        .post(`http://localhost:${fixture.getPort()}/api/telemetry`, telemStr)
+        .then((res) => {
+            expect(res.status).toBe(HttpStatus.Created)
+        })
+})
+
+test('telem bad request', async () => {
+    const telemStr =
+        '{"lon":-122.67648,"lat":45.52306,"alt":101,' +
+        '"timestamp":"2024-03-11T22:26:23.718Z","id":"test_vehicle1",' +
+        '"heading":92.312,"behavior":"some-algorithm","mission_phase":"find",' +
+        '"phase_loc":{"type":"Polygon","coordinates":[' +
+        '[-119.88577910818,39.52776390],[-119.88077910818,39.52776390],' +
+        '[-119.88077910818,39.53176390],[-119.0,39.0]]}}'
+    const telem = v0Telemetry.fromString(telemStr)
+    expect(telem).toBeDefined()
+    await axios
+        .post(`http://localhost:${fixture.getPort()}/api/telemetry`, telemStr)
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        .then((res) => {
+            expect(false).toBe(true)
+        })
+        .catch((err) => {
+            expect(err.response.status).toBe(HttpStatus.BadRequest)
+            expect(err.response.data).toMatch(/Invalid telemetry/)
         })
 })
