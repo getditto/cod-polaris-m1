@@ -120,7 +120,7 @@ documents, but they will be igored. For `Trial Start` and `Trial End`, the
 the timestamp will simply be the time the server (AutoV COD) wrote the response
 to the client.
 
-### A.I.2 Blocking Query
+#### A.I.2 Blocking Query
 
 `GET /api/trial/<trial-id>/start`
 
@@ -140,3 +140,78 @@ _Note:_
 2. _We could also omit the `/<trial-id>` as part of the path and either (a) only
    return information about latest trial, or (b) add `trial-id` as an optional
    query parameter._
+
+### A.II. Telemetry Reporting
+
+_This portion of the API is currently designed to mimic existing services, but may be
+modified in future versions._
+
+`POST /api/telemetry/`
+
+Allows AV (autov) client to send latest telemetry to the Base.
+
+```
+[{
+    "lon": <float>,
+    "lat": <float>,
+    "alt": <float>,
+    "timestamp": <string>,
+    "id": <string>,
+    "heading": <float>,
+    "behavior": <string>,
+    "mission_phase": <string>,
+    "phase_loc": <GeoJSON Polygon or Point geometry object>
+}, ... ]
+```
+
+**Required fields:**
+
+`lon` and `lat` are the longitude and latitude in degrees in the WGS84
+coordinate system. `timestamp` is in ISO 8601 format with timezone. `id` is a
+string which uniquely identifies the reporting vehicle/entity. `heading` is in
+degrees clockwise from true North. `mission_phase` MUST be one of `"wait",
+"find", "identify",` or `"close"`. `phase_loc` describes the location
+corresponding to the phase, and is a GeoJSON Point or Polygon object. Polygons
+shall have at most 10 vertices, including the final closing point which is
+equal to the first. For example:
+
+```
+ [{
+        "lon": -121.346005,
+        "lat": 36.126203,
+        "alt": 0.0,
+        "timestamp": '2024-01-02T12:41:16.502237+00:00',
+        "id": "uas_4",
+        "heading": 137.51,
+        "behavior": "loiter",
+        "mission_phase": "wait",
+        "phase_loc": {
+            "type": "Polygon",
+            "coordinates": [
+                [
+                    [-118.277965, 35.124454],
+                    [-118.270326, 35.124513],
+                    [-118.270393, 35.129934],
+                    [-118.280830, 35.129652],
+                    [-118.277962, 35.124462]
+                ]
+            ]
+        }
+}]
+```
+
+**Optional fields:**
+
+`alt` is optional (omitted for surface vehicles), and is
+height above ellipsoid (HAE) in meters. `behavior` is optional, but may be used
+by autonomy systems for tracking things like "finding", "tracking", "RTB", etc..
+
+### A.II.1 Telemetry Reporting Behavior
+
+Entities/vehicles should call the above API to report real-time position and
+status once every 10 seconds. In addition, upon receipt of a new Trial Start /
+End event (via the APIs defined in [A.I.](#ai-start--stop-trial)), the entity
+should report its current position and status immediately; this serves as an
+acknowledgement of the new Trial status. When responding to a new `Trial Start`
+event, the associated telemetry update SHALL contain one of the values `"find",
+"identify",` or `"close"` for its `"mission_phase"` value.
