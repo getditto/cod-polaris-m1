@@ -24,8 +24,8 @@ export class Timestamp {
 }
 
 // GeoJSON geometry object of type point or polygon
-// Note: rest API spec uses the fields of this object directly (flattened)
-//   instead of including the object in its JSON. i.e. remove surrounding { }
+// Note: parts of the rest API spec uses the fields of this object directly
+// (flattened) instead of including the surrounding object in its JSON.
 // Points are currently 2-d only (no elevation supported)
 export type PointV0 = Array<number>
 export type PolygonV0 = Array<PointV0>
@@ -82,9 +82,15 @@ export class Geometry {
         return true
     }
 
+    private toObject(): Record<string, string | CoordValueV0> {
+        return {
+            type: this.type,
+            coordinates: this.coordinates,
+        }
+    }
+
     public serialize(): string {
-        // No customization yet
-        return JSON.stringify(this)
+        return JSON.stringify(this.toObject())
     }
 
     public static fromString(s: string): Geometry {
@@ -267,3 +273,56 @@ export class v0TrialWait {
 }
 
 export type v0TrialObj = v0TrialStart | v0TrialEnd | v0TrialWait
+
+export type MissionPhaseV0 = 'wait' | 'find' | 'identify' | 'close'
+
+export class v0Telemetry {
+    version = 0
+    lon: number = 0
+    lat: number = 0
+    alt: number | undefined
+    timestamp: Timestamp = new Timestamp()
+    id: string = ''
+    heading: number = -1
+    behavior: string | undefined
+    mission_phase: MissionPhaseV0 = 'wait'
+    phase_loc?: Geometry
+    private toObject(): Record<string, string | number | Geometry | undefined> {
+        return {
+            lon: this.lon,
+            lat: this.lat,
+            alt: this.alt,
+            timestamp: this.timestamp.toString(),
+            id: this.id,
+            heading: this.heading,
+            behavior: this.behavior,
+            mission_phase: this.mission_phase,
+            phase_loc: this.phase_loc,
+        }
+    }
+
+    public serialize(): string {
+        return JSON.stringify(this.toObject())
+    }
+
+    public static fromString(s: string): v0Telemetry {
+        const parsed = JSON.parse(s, (key, value) => {
+            if (key == 'timestamp') {
+                return Timestamp.fromString(value)
+            } else {
+                return value
+            }
+        })
+        const t = new v0Telemetry()
+        t.lon = parsed.lon
+        t.lat = parsed.lat
+        t.alt = parsed.alt
+        t.timestamp = parsed.timestamp
+        t.id = parsed.id
+        t.heading = parsed.heading
+        t.behavior = parsed.behavior
+        t.mission_phase = parsed.mission_phase
+        t.phase_loc = parsed.phase_loc
+        return t
+    }
+}
