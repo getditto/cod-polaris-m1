@@ -7,22 +7,31 @@ export enum LogLevel {
 export const DEFAULT_LOG_LEVEL = LogLevel.warn
 
 const ord = [LogLevel.debug, LogLevel.info, LogLevel.warn, LogLevel.error]
+
 // @ts-expect-error global implicitly any
 global.loggerLevel = DEFAULT_LOG_LEVEL
 
-function shouldLog(level: LogLevel): boolean {
+function shouldLog(logLevel: LogLevel, setLevel: LogLevel): boolean {
+    return ord.indexOf(logLevel) >= ord.indexOf(setLevel)
+}
+
+export function setLogLevel(level: LogLevel) {
+    if (!shouldLog(LogLevel.warn, level)) {
+        global.console.warn = () => {}
+    }
+    if (!shouldLog(LogLevel.info, level)) {
+        global.console.info = () => {}
+    }
+    if (!shouldLog(LogLevel.debug, level)) {
+        global.console.debug = () => {}
+    }
     // @ts-expect-error global implicitly any
-    return ord.indexOf(level) >= ord.indexOf(global.loggerLevel)
+    global.loggerLevel = level
 }
 
 export function getLogLevel(): LogLevel {
     // @ts-expect-error global implicitly any
     return global.loggerLevel
-}
-
-export function setLogLevel(level: LogLevel) {
-    // @ts-expect-error global implicitly any
-    global.loggerLevel = level
 }
 
 export function setLogLevelStr(levelStr?: string) {
@@ -43,25 +52,4 @@ export function setLogLevelStr(levelStr?: string) {
             default:
         }
     }
-}
-
-const logFn = console.log
-global.console = {
-    ...global.console,
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    error: (msg?: any, ...args: any[]) => {
-        shouldLog(LogLevel.error) && logFn(msg, ...args)
-    },
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    warn: (msg?: any, ...args: any[]) => {
-        shouldLog(LogLevel.warn) && logFn(msg, ...args)
-    },
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    info: (msg?: any, ...args: any[]) => {
-        shouldLog(LogLevel.info) && logFn(msg, ...args)
-    },
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    debug: (msg?: any, ...args: any[]) => {
-        shouldLog(LogLevel.debug) && logFn(msg, ...args)
-    },
 }
