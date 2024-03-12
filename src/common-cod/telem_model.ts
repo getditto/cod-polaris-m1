@@ -1,29 +1,41 @@
 import { assert } from 'console'
 import { DittoCOD } from '../ditto_cod.js'
 import { Config } from './config.js'
-import { CoordValueV0, GeomTypeV0, v0Telemetry } from './protocol.js'
-import { Store } from '@dittolive/ditto'
+import { CoordValueV0, GeomTypeV0, Geometry, v0Telemetry } from './protocol.js'
+import {
+    DocumentID,
+    QueryResult,
+    QueryResultItem,
+    Store,
+    SyncSubscription,
+} from '@dittolive/ditto'
 
 export const COLLECTION = 'telemetry'
 export const MODEL_VERSION = 0
 
 type v0GeomRecord = { [key: string]: GeomTypeV0 | CoordValueV0 }
-type TelemDocV0 = Record<
-    string,
-    string | number | boolean | v0GeomRecord | undefined
->
+
+type TelemFieldsV0 = string | number | boolean | v0GeomRecord
+type TelemDocV0 = { [key: string]: TelemFieldsV0 }
+type TelemDocV0WithOptionals = { [key: string]: TelemFieldsV0 | undefined }
+
+export type V0TelemWithId = [_id: DocumentID, v0Telem: v0Telemetry]
+export type TelemUpdateCallback = (telem: V0TelemWithId[]) => void
+
 export class TelemModel {
     dittoCod: DittoCOD
     config: Config
     store: Store | null = null
+    sub: SyncSubscription | null = null
 
     constructor(dittoCod: DittoCOD, config: Config) {
         this.dittoCod = dittoCod
         this.config = config
     }
 
-    private telemV0toDocV0(vt: v0Telemetry): TelemDocV0 {
+    private telemV0toDocV0(vt: v0Telemetry): TelemDocV0WithOptionals {
         return {
+            // _id: undefined, // set on read from Ditto
             lon: vt.lon,
             lat: vt.lat,
             alt: vt.alt,
@@ -32,20 +44,74 @@ export class TelemModel {
             heading: vt.heading,
             behavior: vt.behavior,
             mission_phase: vt.mission_phase,
-            phase_loc: vt.phase_loc,
+            phase_loc: vt.phase_loc!, // XXX TODO
             model_version: MODEL_VERSION,
             consumed: false,
         }
     }
 
+    private telemQuery(): string {
+        return `SELECT * FROM ${COLLECTION} WHERE consumed = false`
+    }
+
     async writeTelem(v0Telem: v0Telemetry) {
         // TODO
         console.info('-> write: ', v0Telem)
-        const doc = this.telemV0toDocV0(v0Telem)
+        const doc = this.telemV0toDocV0(v0Telem) as TelemDocV0
         const q = `INSERT INTO ${COLLECTION} DOCUMENTS (:doc)`
         console.debug('writeTelem: ', q)
         await this.store!.execute(q, { doc: doc })
         console.debug('-> ', doc)
+    }
+
+    private queryItemToV0TelemWithId(qi: QueryResultItem): V0TelemWithId {
+        const val = qi.value
+        if (val.model_version != MODEL_VERSION) {
+            console.error(
+                'Got doc with unsupported model_version ',
+                val.model_version
+            )
+        }
+        const vt = new v0Telemetry()
+        vt.lon = val.lon
+        vt.lat = val.lat
+        vt.alt = val.alt
+        vt.timestamp = val.timestamp
+        vt.id = val.node_id
+        vt.heading = val.heading
+        vt.behavior = val.behavior
+        vt.mission_phase = val.mission_phase
+        if (val.phase_loc) {
+            vt.phase_loc = Geometry.fromFields(
+                val.phase_loc.name,
+                val.phase_loc.coordinates
+            ).toObject()
+        }
+        return [val._id, vt]
+    }
+
+    // Subscribe to updates on telemetry records. Supply a callback which will
+    // be called with a list of telemetry records whenever there is an update.
+    subscribe(cb: TelemUpdateCallback) {
+        const q = this.telemQuery()
+        if (!this.sub) {
+            this.sub = this.dittoCod.registerSubscription(q)
+        }
+        this.store!.registerObserver(q, (result: QueryResult) => {
+            const telemObjs: V0TelemWithId[] = result.items.map(
+                (qi: QueryResultItem) => {
+                    return this.queryItemToV0TelemWithId(qi)
+                }
+            )
+            cb(telemObjs)
+        })
+    }
+
+    unsubscribe() {
+        if (this.sub) {
+            this.sub.cancel()
+            this.sub = null
+        }
     }
 
     async start() {
