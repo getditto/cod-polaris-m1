@@ -28,6 +28,12 @@ export function normalizeUrl(url: string): string {
     return url
 }
 
+// Basic prevention from XSS getting through our exception -> http response
+// body path via some future 3rd party dependency
+export function sanitizeResponse(body: string) {
+    return body.replace(/</g, '&lt;').replace(/>/g, '&gt;')
+}
+
 export const JSON_CONTENT = 'application/json; charset=utf-8'
 export const CONTENT_TYPE_JSON = { 'Content-Type': JSON_CONTENT }
 

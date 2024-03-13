@@ -21,6 +21,7 @@ import {
 import { TrialModel } from '../common-cod/trial_model.js'
 import { assert } from 'node:console'
 import { TelemModel } from '../common-cod/telem_model.js'
+import { sanitizeResponse } from '../common-cod/basic_http.js'
 
 export class HttpServer {
     trialModel: TrialModel
@@ -139,7 +140,7 @@ export class HttpServer {
                 this.router(req, res).catch((e) => {
                     console.info('BadRequest: ', e.message)
                     res.writeHead(HttpStatus.BadRequest)
-                    res.end(e.message)
+                    res.end(sanitizeResponse(e.message))
                 })
             }
         )
