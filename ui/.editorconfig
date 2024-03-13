@@ -1,0 +1,7 @@
+# Duplicate .prettierrc settings here until we figure out
+# how to make our editor mind those settings.
+root = true
+[*]
+indent_style = space
+indent_size = 4
+trim_trailing_whitespace = true
