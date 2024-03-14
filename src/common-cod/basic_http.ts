@@ -36,13 +36,25 @@ export function sanitizeResponse(body: string) {
 }
 
 const JSON_CONTENT = 'application/json; charset=utf-8'
+const PLAIN_TEXT = 'text/plain; charset=utf-8'
 const CONTENT_TYPE_JSON = { 'Content-Type': JSON_CONTENT }
+const CONTENT_TYPE_PLAIN = { 'Content-Type': PLAIN_TEXT }
 export const CORS_ALLOW_ANY = {
-    'Access-Control-Allow-Origin': '*', /* @dev First, read about security */
-    'Access-Control-Allow-Methods': 'OPTIONS, POST, GET',
-    'Access-Control-Max-Age': 86400, // 30 days
-  }
-export const CONTENT_TYPE_JSON_CORS_ANY = { ...CONTENT_TYPE_JSON, ...CORS_ALLOW_ANY }
+    'Access-Control-Allow-Origin': '*',
+    'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+    'Access-Control-Allow-Headers':
+        'Content-Type, Content-Length, X-Requested-With',
+    'Access-Control-Max-Age': '86400',
+    Vary: 'Origin',
+}
+export const CONTENT_TYPE_JSON_CORS_ANY = {
+    ...CORS_ALLOW_ANY,
+    ...CONTENT_TYPE_JSON,
+}
+export const CONTENT_TYPE_PLAIN_CORS_ANY = {
+    ...CORS_ALLOW_ANY,
+    ...CONTENT_TYPE_PLAIN,
+}
 
 export class BasicHttp {
     // TODO factor out http-specific config
@@ -74,6 +86,7 @@ export class BasicHttp {
     }
 
     handleOptions(req: IncomingMessage, rep: ServerResponse): boolean {
+        console.debug(`handleOptions request: ${req.method} ${req.url}`)
         if (req.method === 'OPTIONS') {
             rep.writeHead(HttpStatus.NoConent, CORS_ALLOW_ANY)
             rep.end()
