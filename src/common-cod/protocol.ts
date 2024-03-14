@@ -154,11 +154,16 @@ export class TrialId {
     }
 }
 
-export type TrialStartObjV0 = Record<string, string | number | CoordValueV0>
+export type TrialState = 'Trial Start' | 'Trial End' | 'Wait'
+
+export type TrialStartObjV0 = Record<
+    string,
+    string | number | CoordValueV0 | TrialState
+>
 
 export class v0TrialStart {
     version: number = 0
-    name: string = 'Trial Start'
+    name: TrialState = 'Trial Start'
     timestamp: Timestamp
     trial_id: TrialId
     num_targets: number
@@ -248,7 +253,7 @@ export type TrialEndObjV0 = Record<string, string | number>
 
 export class v0TrialEnd {
     version: number = 0
-    name: string = 'Trial End'
+    name: TrialState = 'Trial End'
     timestamp: Timestamp
     trial_id: TrialId
     constructor(ts: Timestamp, id: TrialId) {
