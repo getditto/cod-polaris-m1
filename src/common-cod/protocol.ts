@@ -154,6 +154,8 @@ export class TrialId {
     }
 }
 
+export type TrialStartObjV0 = Record<string, string | number | CoordValueV0>
+
 export class v0TrialStart {
     version: number = 0
     name: string = 'Trial Start'
@@ -178,7 +180,7 @@ export class v0TrialStart {
     }
 
     // control serialization
-    private toObject(): Record<string, string | number | CoordValueV0> {
+    private toObject(): TrialStartObjV0 {
         return {
             version: this.version,
             name: this.name,
@@ -211,9 +213,38 @@ export class v0TrialStart {
             parsed.type,
             parsed.coordinates
         )
+        start.version = 0
+        return start
+    }
+
+    // TODO clean up / refactor serde in general
+    public static fromObject(o: TrialStartObjV0): v0TrialStart {
+        // throw if any fields are missing
+
+        for (const field of [
+            'name',
+            'timestamp',
+            'trial_id',
+            'num_targets',
+            'type',
+            'coordinates',
+        ]) {
+            if (!o[field]) {
+                throw new Error(`Trial start missing field ${field}`)
+            }
+        }
+        const start = new v0TrialStart(
+            Timestamp.fromString(o.timestamp as string),
+            TrialId.fromString(o.trial_id as string),
+            o.num_targets as number,
+            o.type as GeomTypeV0,
+            o.coordinates as CoordValueV0
+        )
         return start
     }
 }
+
+export type TrialEndObjV0 = Record<string, string | number>
 
 export class v0TrialEnd {
     version: number = 0
@@ -251,6 +282,19 @@ export class v0TrialEnd {
         const end = new v0TrialEnd(parsed.timestamp, parsed.trial_id)
         return end
     }
+
+    public static fromObject(o: TrialEndObjV0): v0TrialEnd {
+        for (const field of ['timestamp', 'trial_id', 'name']) {
+            if (!o[field]) {
+                throw new Error(`Trial end missing field ${field}`)
+            }
+        }
+        const end = new v0TrialEnd(
+            Timestamp.fromString(o.timestamp as string),
+            TrialId.fromString(o.trial_id as string)
+        )
+        return end
+    }
 }
 
 export class v0TrialWait {
@@ -278,7 +322,7 @@ export class v0TrialWait {
             }
         })
         const init = new v0TrialWait()
-        init.version = parsed.version
+        init.version = parsed.version ?? 0
         init.name = parsed.name
         init.timestamp = parsed.timestamp
         return init
