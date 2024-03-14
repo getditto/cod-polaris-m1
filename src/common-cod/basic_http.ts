@@ -14,6 +14,7 @@ export class HttpConfig {
 export enum HttpStatus {
     Ok = 200,
     Created = 201,
+    NoConent = 204, // only used for http OPTIONS
     BadRequest = 400,
     Unauthorized = 401,
     NotFound = 404,
@@ -34,8 +35,14 @@ export function sanitizeResponse(body: string) {
     return body.replace(/</g, '&lt;').replace(/>/g, '&gt;')
 }
 
-export const JSON_CONTENT = 'application/json; charset=utf-8'
-export const CONTENT_TYPE_JSON = { 'Content-Type': JSON_CONTENT }
+const JSON_CONTENT = 'application/json; charset=utf-8'
+const CONTENT_TYPE_JSON = { 'Content-Type': JSON_CONTENT }
+export const CORS_ALLOW_ANY = {
+    'Access-Control-Allow-Origin': '*', /* @dev First, read about security */
+    'Access-Control-Allow-Methods': 'OPTIONS, POST, GET',
+    'Access-Control-Max-Age': 86400, // 30 days
+  }
+export const CONTENT_TYPE_JSON_CORS_ANY = { ...CONTENT_TYPE_JSON, ...CORS_ALLOW_ANY }
 
 export class BasicHttp {
     // TODO factor out http-specific config
@@ -64,6 +71,15 @@ export class BasicHttp {
                 )
             }
         )
+    }
+
+    handleOptions(req: IncomingMessage, rep: ServerResponse): boolean {
+        if (req.method === 'OPTIONS') {
+            rep.writeHead(HttpStatus.NoConent, CORS_ALLOW_ANY)
+            rep.end()
+            return true
+        }
+        return false
     }
 
     async start() {
