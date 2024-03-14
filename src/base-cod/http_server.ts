@@ -65,7 +65,7 @@ export class HttpServer {
     ) {
         const _v0Wait = v0TrialWait.fromString(body)
         console.debug('Received trial Wait (health check):', _v0Wait)
-        rep.writeHead(HttpStatus.Ok)
+        rep.writeHead(HttpStatus.Ok, CORS_ALLOW_ANY)
         rep.end()
     }
 
@@ -100,7 +100,10 @@ export class HttpServer {
                 msg += ': ' + e.message
             }
             console.info(msg)
-            rep.writeHead(HttpStatus.UnprocessableEntity, CONTENT_TYPE_JSON_CORS_ANY)
+            rep.writeHead(
+                HttpStatus.UnprocessableEntity,
+                CONTENT_TYPE_JSON_CORS_ANY
+            )
             rep.end(msg)
         }
     }
@@ -113,7 +116,7 @@ export class HttpServer {
                     return
                 }
                 if (req.method !== 'POST') {
-                    res.writeHead(HttpStatus.BadRequest)
+                    res.writeHead(HttpStatus.BadRequest, CORS_ALLOW_ANY)
                     res.end()
                     return
                 }
@@ -125,7 +128,7 @@ export class HttpServer {
                         break
                     default:
                         console.info('unsupported url (404):', req.url)
-                        res.writeHead(HttpStatus.NotFound)
+                        res.writeHead(HttpStatus.NotFound, CORS_ALLOW_ANY)
                         res.end()
                         break
                 }
