@@ -12,7 +12,7 @@ import {
 } from '../common-cod/protocol.js'
 import { CondPromise } from '../util/cond_promise.js'
 import {
-    CONTENT_TYPE_JSON,
+    CONTENT_TYPE_JSON_CORS_ANY,
     BasicHttp,
     HttpStatus,
     normalizeUrl,
@@ -46,7 +46,7 @@ export class HttpServer {
     // GET of current trial state
     private async handleState(rep: ServerResponse) {
         const obj: v0TrialObj = await this.trialModel.pollTrial()
-        rep.writeHead(HttpStatus.Ok, CONTENT_TYPE_JSON)
+        rep.writeHead(HttpStatus.Ok, CONTENT_TYPE_JSON_CORS_ANY)
         rep.end(obj.serialize())
     }
 
@@ -58,7 +58,7 @@ export class HttpServer {
         const id = new TrialId()
         const num_targets = 3
         const geom = new Geometry()
-        rep.writeHead(HttpStatus.Ok, CONTENT_TYPE_JSON)
+        rep.writeHead(HttpStatus.Ok, CONTENT_TYPE_JSON_CORS_ANY)
         rep.end(
             new v0TrialStart(
                 ts,
@@ -76,7 +76,7 @@ export class HttpServer {
         // XXX TODO implement
         const ts = new Timestamp()
         const id = new TrialId()
-        rep.writeHead(HttpStatus.Ok, CONTENT_TYPE_JSON)
+        rep.writeHead(HttpStatus.Ok, CONTENT_TYPE_JSON_CORS_ANY)
         rep.end(new v0TrialEnd(ts, id).serialize())
     }
 
@@ -137,6 +137,9 @@ export class HttpServer {
         this.base.server.on(
             'request',
             (req: IncomingMessage, res: ServerResponse) => {
+                if (this.base.handleOptions(req, res)) {
+                    return
+                }
                 this.router(req, res).catch((e) => {
                     console.info('BadRequest: ', e.message)
                     res.writeHead(HttpStatus.BadRequest)

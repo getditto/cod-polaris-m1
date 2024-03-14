@@ -6,8 +6,9 @@ import {
     v0TrialWait,
 } from '../common-cod/protocol.js'
 import {
-    CONTENT_TYPE_JSON,
     BasicHttp,
+    CONTENT_TYPE_JSON_CORS_ANY,
+    CORS_ALLOW_ANY,
     HttpStatus,
     normalizeUrl,
     requestData,
@@ -37,7 +38,7 @@ export class HttpServer {
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const tStart = v0TrialStart.fromString(body)
         await this.trialModel.startTrial(tStart)
-        rep.writeHead(HttpStatus.Created)
+        rep.writeHead(HttpStatus.Created, CORS_ALLOW_ANY)
         rep.end()
     }
 
@@ -50,7 +51,7 @@ export class HttpServer {
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const tEnd = v0TrialEnd.fromString(body)
         await this.trialModel.endTrial(tEnd)
-        rep.writeHead(HttpStatus.Created)
+        rep.writeHead(HttpStatus.Created, CORS_ALLOW_ANY)
         rep.end()
     }
 
@@ -72,7 +73,7 @@ export class HttpServer {
             if (init.version != undefined && init.version != 0) {
                 const err = `Unsupported version: ${init.version}`
                 console.info(err)
-                rep.writeHead(HttpStatus.BadRequest, CONTENT_TYPE_JSON)
+                rep.writeHead(HttpStatus.BadRequest, CONTENT_TYPE_JSON_CORS_ANY)
                 rep.end(err)
             } else {
                 if (init.name == 'Trial Start') {
@@ -95,7 +96,7 @@ export class HttpServer {
                 msg += ': ' + e.message
             }
             console.info(msg)
-            rep.writeHead(HttpStatus.UnprocessableEntity, CONTENT_TYPE_JSON)
+            rep.writeHead(HttpStatus.UnprocessableEntity, CONTENT_TYPE_JSON_CORS_ANY)
             rep.end(msg)
         }
     }
@@ -104,6 +105,9 @@ export class HttpServer {
         this.base.server.on(
             'request',
             (req: IncomingMessage, res: ServerResponse) => {
+                if (this.base.handleOptions(req, res)) {
+                    return
+                }
                 if (req.method !== 'POST') {
                     res.writeHead(HttpStatus.BadRequest)
                     res.end()
