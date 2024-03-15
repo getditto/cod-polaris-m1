@@ -14,20 +14,29 @@ import {
     HttpStatus,
     normalizeUrl,
     requestData,
+    sanitizeResponse,
 } from '../common-cod/basic_http.js'
 import { TrialModel } from '../common-cod/trial_model.js'
+import { TelemModel } from '../common-cod/telem_model.js'
 
 const URL_BASE = '/api'
 const URL_TRIAL_START = URL_BASE + '/trial_start'
 const URL_TRIAL_END = URL_BASE + '/trial_end'
+const URL_TELEMETRY = URL_BASE + '/telemetry'
 
 export class HttpServer {
     trialModel: TrialModel
+    telemModel: TelemModel
     config: Config
     base: BasicHttp
 
-    constructor(trialModel: TrialModel, config: Config) {
+    constructor(
+        trialModel: TrialModel,
+        telemModel: TelemModel,
+        config: Config
+    ) {
         this.trialModel = trialModel
+        this.telemModel = telemModel
         this.config = config
         this.base = new BasicHttp(config.toHttpConfig())
     }
@@ -69,29 +78,36 @@ export class HttpServer {
         rep.end()
     }
 
-    private async handlePost(req: IncomingMessage, rep: ServerResponse) {
+    private async handlePost(req: IncomingMessage, res: ServerResponse) {
+        const url = normalizeUrl(req.url ?? '')
+        if (url !== URL_TRIAL_START && url !== URL_TRIAL_END) {
+            console.info('unsupported url (404):', req.url)
+            res.writeHead(HttpStatus.NotFound, CORS_ALLOW_ANY)
+            res.end()
+            return
+        }
         const body = await requestData(req)
         try {
             const init = JSON.parse(body)
             if (init.version != undefined && init.version != 0) {
                 const err = `Unsupported version: ${init.version}`
                 console.info(err)
-                rep.writeHead(HttpStatus.BadRequest, CONTENT_TYPE_JSON_CORS_ANY)
-                rep.end(err)
+                res.writeHead(HttpStatus.BadRequest, CONTENT_TYPE_JSON_CORS_ANY)
+                res.end(err)
             } else {
                 if (init.name == 'Trial Start') {
-                    await this.handleStart(init, req, rep)
+                    await this.handleStart(init, req, res)
                 } else if (init.name == 'Trial End') {
-                    await this.handleEnd(init, req, rep)
+                    await this.handleEnd(init, req, res)
                 } else if (init.name == 'Wait') {
                     // This is not in the spec--but would be good to have a
                     // side-effect free "ping" or "get status" endpoint to
                     // sanity/health check the service
-                    await this.handleWait(body, req, rep)
+                    await this.handleWait(body, req, res)
                 } else {
                     console.warn("Unsupported 'name' field:", init.name)
-                    rep.writeHead(HttpStatus.BadRequest)
-                    rep.end()
+                    res.writeHead(HttpStatus.BadRequest)
+                    res.end()
                 }
             }
         } catch (e) {
@@ -100,11 +116,33 @@ export class HttpServer {
                 msg += ': ' + e.message
             }
             console.info(msg)
-            rep.writeHead(
+            res.writeHead(
                 HttpStatus.UnprocessableEntity,
                 CONTENT_TYPE_JSON_CORS_ANY
             )
-            rep.end(msg)
+            res.end(sanitizeResponse(msg))
+        }
+    }
+
+    // TODO For demo / test: this is not in the specification yet.
+    private async handleGet(req: IncomingMessage, res: ServerResponse) {
+        const url = normalizeUrl(req.url ?? '')
+        if (url != URL_TELEMETRY) {
+            console.info('unsupported url (404):', req.url)
+            res.writeHead(HttpStatus.NotFound, CORS_ALLOW_ANY)
+            res.end()
+        }
+        const telemRecords = await this.telemModel.consumeTelem()
+        const plainTelemObjs = telemRecords.map((t) => t.serialize())
+        res.writeHead(HttpStatus.Ok, CONTENT_TYPE_JSON_CORS_ANY)
+        res.end(JSON.stringify(plainTelemObjs))
+    }
+
+    private async router(req: IncomingMessage, res: ServerResponse) {
+        if (req.method === 'GET') {
+            return this.handleGet(req, res)
+        } else if (req.method === 'POST') {
+            return this.handlePost(req, res)
         }
     }
 
@@ -115,23 +153,11 @@ export class HttpServer {
                 if (this.base.handleOptions(req, res)) {
                     return
                 }
-                if (req.method !== 'POST') {
-                    res.writeHead(HttpStatus.BadRequest, CORS_ALLOW_ANY)
-                    res.end()
-                    return
-                }
-                const url = normalizeUrl(req.url ?? '')
-                switch (url) {
-                    case URL_TRIAL_START:
-                    case URL_TRIAL_END:
-                        this.handlePost(req, res)
-                        break
-                    default:
-                        console.info('unsupported url (404):', req.url)
-                        res.writeHead(HttpStatus.NotFound, CORS_ALLOW_ANY)
-                        res.end()
-                        break
-                }
+                this.router(req, res).catch((e) => {
+                    console.info('BadRequest: ', e.message)
+                    res.writeHead(HttpStatus.BadRequest)
+                    res.end(sanitizeResponse(e.message))
+                })
             }
         )
     }
