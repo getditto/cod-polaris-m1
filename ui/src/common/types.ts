@@ -39,7 +39,7 @@ export type TelemRecord = {
     alt: number
     timestamp: string
     id: string
-    heading: string
+    heading: number
     behavior: string
     mission_phase: string
     phase_loc: GeomRecordV0

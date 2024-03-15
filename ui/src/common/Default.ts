@@ -16,7 +16,7 @@ export const DEFAULT_TELEM_OBJ: TelemRecord = {
     alt: 0,
     timestamp: '2024-03-12T22:26:23.718Z',
     id: 'uav_1',
-    heading: '183.3',
+    heading: 183.3,
     behavior: 'loiter',
     mission_phase: 'find',
     phase_loc: {

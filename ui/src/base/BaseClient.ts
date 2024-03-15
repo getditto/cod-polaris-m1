@@ -1,5 +1,10 @@
 import axios from 'axios'
-import { TrialState, makeTrialEnd, makeTrialStart } from '../common/types'
+import {
+    TelemRecord,
+    TrialState,
+    makeTrialEnd,
+    makeTrialStart,
+} from '../common/types'
 import { axiosErrorResponse } from '../common/util'
 import { BaseConfig } from './BaseConfig'
 
@@ -77,5 +82,27 @@ export class BaseClient {
             console.warn(`POST ${url} failed: ${response}`)
             return new StartEndResponse(status, TrialState.Wait, response)
         }
+    }
+
+    async consumeTelem(): Promise<TelemRecord[]> {
+        const records: TelemRecord[] = []
+        const url = `${this.config.urlBase}/api/telemetry`
+        try {
+            console.info(`GET ${url}`)
+            const res = await axios.get(url)
+            const recordObjs = res.data
+            // assert is array
+            if (!Array.isArray(recordObjs)) {
+                console.warn(`GET ${url} returned non-array: ${res.data}`)
+                return records
+            }
+            for (const obj of recordObjs) {
+                records.push(obj)
+            }
+        } catch (err) {
+            const [status, response] = axiosErrorResponse(err)
+            console.warn(`GET ${url} failed (${status}): ${response}`)
+        }
+        return records
     }
 }
