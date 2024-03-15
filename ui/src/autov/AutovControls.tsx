@@ -20,7 +20,6 @@ function ArmSwtich({
     onArm: (armed: boolean) => void
     enabled: boolean
 }) {
-    console.debug(`Creating arm switch w/ enabled=${enabled}`)
     return (
         <Switch
             checked={armed}

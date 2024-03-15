@@ -5,9 +5,10 @@ import { useState } from 'react'
 import { AutovClient, TrialResponse } from './AutovClient'
 import { AutovConfig } from './Config'
 import TrialStatus from '../common/TrialStatus'
-import {  TrialState } from '../common/types'
+import { TrialState } from '../common/types'
 import AvInfo from './AvInfo'
-import { TrialLifecycle } from './TrialLifecycle'
+import { AvStatus, TrialLifecycle } from './TrialLifecycle'
+import AvState from './AvState'
 
 /* TSC still warns us: */
 /* eslint-disable @typescript-eslint/no-unused-vars */
@@ -21,23 +22,22 @@ function AutovUi() {
 
     const [armed, setArmed] = useState<boolean>(false)
     const [armEnabled, setArmEnabled] = useState<boolean>(true)
-    //let trialInfo: TrialObj | null = null
+
+    const [avStatus, setAvStatus] = useState<AvStatus>(AvStatus.preInit())
+
+    function appendLog(row: LogEntry) {
+        setLogRows([row, ...logRows])
+    }
 
     function logTrialResponse(api: string, response: TrialResponse): boolean {
-        const detailStr = response.error ?? ''
-        const detail = {
-            timestamp: response.obj?.timestamp ?? '',
-            raw: detailStr,
-        }
         const success = response.httpStatus >= 200 && response.httpStatus < 300
         const toLog: LogEntry = {
             api: api,
             success: success,
             sent: '',
             received: JSON.stringify(response.obj),
-            details: [detail],
         }
-        setLogRows([toLog, ...logRows])
+        appendLog(toLog)
         return success
     }
 
@@ -59,13 +59,6 @@ function AutovUi() {
         setTrialStatus(TrialState.Wait)
     }
 
-    function updateTrial(api: string, res: TrialResponse) {
-        const success = logTrialResponse(api, res)
-        if (success) {
-            setTrialStatus(res.obj!.name as TrialState)
-        }
-    }
-
     async function onArm(armed: boolean) {
         console.debug('onArm', armed)
         setArmed(armed)
@@ -75,8 +68,10 @@ function AutovUi() {
             setTimeout(async () => {
                 const lifecycle = new TrialLifecycle(
                     client,
-                    updateTrial,
-                    setArmed
+                    setTrialStatus,
+                    setAvStatus,
+                    setArmed,
+                    appendLog
                 )
                 await lifecycle.start()
                 setArmEnabled(true)
@@ -103,6 +98,7 @@ function AutovUi() {
                     <TrialStatus status={trialStatus} />
                 </Grid>
             </Grid>
+            <AvState avStatus={avStatus} />
             <AutovControls
                 onGetTrialStatus={getTrial}
                 onClear={clearLog}

@@ -4,12 +4,13 @@ import BaseInfo from './BaseInfo'
 import BaseCommands from './BaseCommands'
 import TrialStatus from '../common/TrialStatus'
 import { BaseClient, StartEndResponse } from './BaseClient'
-import { Telemetry, TrialState } from '../common/types'
+import { TelemRecord, Telemetry, TrialState } from '../common/types'
 import { useState } from 'react'
 import TelemView from '../common/TelemView'
 import { DEFAULT_TELEMETRY } from '../common/Default'
 import { BaseConfig } from './BaseConfig'
 import { genTrialIds } from '../common/util'
+import { TelemReader } from './TelemReader'
 
 /* TSC still warns us: */
 /* eslint-disable @typescript-eslint/no-unused-vars */
@@ -19,26 +20,35 @@ function BaseUi() {
     const [config, setConfig] = useState<BaseConfig>(new BaseConfig())
     const [trialStatus, setTrialStatus] = useState<TrialState>(TrialState.Wait)
     const [logRows, setLogRows] = useState<LogEntry[]>([])
-    // @ts-expect-error unused var
     const [telem, setTelem] = useState<Telemetry>(DEFAULT_TELEMETRY)
     const trialIds = genTrialIds()
     const [trialId, setTrialId] = useState(trialIds[0])
 
     const client = new BaseClient(config)
 
+    function appendTelemArray(telem: TelemRecord[]) {
+        setTelem((prev) => {
+            const newTelem = prev
+            newTelem.push(...telem)
+            return newTelem
+        })
+    }
+
+    function appendLog(row: LogEntry) {
+        setLogRows((prev) => {
+            const newLog = prev
+            newLog.push(row)
+            return newLog
+        })
+    }
+
     function responseToLog(response: StartEndResponse, api: string): LogEntry {
-        const detailStr = response.response ?? ''
-        const detail = {
-            timestamp: response.timestamp,
-            raw: detailStr,
-        }
         const success = response.httpStatus >= 200 && response.httpStatus < 300
         const toLog: LogEntry = {
             api: api,
             success: success,
             sent: '',
             received: '',
-            details: [detail],
         }
         console.debug('responseToLog ', response, ' -> ', toLog)
         return toLog
@@ -55,7 +65,7 @@ function BaseUi() {
             setTrialStatus(state)
         }
         const toLog = responseToLog(response, 'POST /api/trial_start')
-        setLogRows([toLog, ...logRows])
+        appendLog(toLog)
     }
 
     async function sendEnd() {
@@ -72,7 +82,7 @@ function BaseUi() {
             setTrialStatus(state)
         }
         const toLog = responseToLog(response, 'POST /api/trial_end')
-        setLogRows([toLog, ...logRows])
+        appendLog(toLog)
     }
 
     async function onClear() {
@@ -82,6 +92,9 @@ function BaseUi() {
     async function onIdChange(event: React.ChangeEvent<{ value: unknown }>) {
         setTrialId(event.target.value as string)
     }
+
+    const telemReader = new TelemReader(client, appendTelemArray, appendLog)
+    telemReader.start()
 
     return (
         <Box sx={{ border: 1 }} m={2} p={2}>

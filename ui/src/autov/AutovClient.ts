@@ -1,5 +1,5 @@
 import axios from 'axios'
-import { TrialObj, TrialState } from '../common/types'
+import { TelemRecord, TrialObj, TrialState } from '../common/types'
 import { AutovConfig } from './Config'
 import { axiosErrorResponse } from '../common/util'
 
@@ -71,6 +71,26 @@ export class AutovClient {
                 break
         }
         return obj
+    }
+
+    // Returns HTTP status (201 is success)
+    async postTelem(telem: TelemRecord): Promise<number> {
+        const url = `${this.config.urlBase}/api/telemetry`
+        let status = 400
+        try {
+            console.info(`POST ${url}`)
+            const res = await axios.post(url, telem)
+            status = res.status
+            if (res.status != 201) {
+                console.warn(
+                    'POST /api/telemetry expected 201 response: ',
+                    res.status
+                )
+            }
+        } catch (err) {
+            console.warn(`POST ${url} failed: ${err}`)
+        }
+        return status
     }
 
     async awaitTrial(wantStart: boolean): Promise<TrialResponse> {
