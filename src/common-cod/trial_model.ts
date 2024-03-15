@@ -143,12 +143,16 @@ export class TrialModel {
                 q,
                 (queryResult, signalNext) => {
                     if (queryResult.items.length == 0) {
-                        console.info("Observer callback w/ empty QueryResult, ignoring.")
+                        console.info(
+                            'Observer callback w/ empty QueryResult, ignoring.'
+                        )
                         signalNext()
                         return
                     }
                     if (queryResult.items[0].value == undefined) {
-                        console.info("Observer callback w/ undefined value, ignoring.")
+                        console.info(
+                            'Observer callback w/ undefined value, ignoring.'
+                        )
                         signalNext()
                         return
                     }
