@@ -37,46 +37,82 @@ export class AutovClient {
         this.config = config
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    private responseToObj(data: any): TrialObj | null {
+        let obj: TrialObj | null = null
+        switch (data.name) {
+            case 'Wait':
+                obj = {
+                    version: data.version,
+                    name: data.name,
+                    timestamp: data.timestamp,
+                }
+                break
+            case 'Trial Start':
+                obj = {
+                    version: data.version,
+                    name: data.name,
+                    timestamp: data.timestamp,
+                    trial_id: data.trial_id,
+                    num_targets: data.num_targets,
+                    type: data.type,
+                    coordinates: data.coordinates,
+                }
+                break
+            case 'Trial End':
+                obj = {
+                    version: data.version,
+                    name: data.name,
+                    timestamp: data.timestamp,
+                    trial_id: data.trial_id,
+                }
+                break
+            default:
+                break
+        }
+        return obj
+    }
+
+    async awaitTrial(wantStart: boolean): Promise<TrialResponse> {
+        const url = `${this.config.urlBase}/api/trial/${
+            wantStart ? 'start' : 'end'
+        }`
+        try {
+            const res = await axios.get(url)
+            // XXX TODO handle timeout/retry
+            if (res.status == 200) {
+                const obj = this.responseToObj(res.data)
+                if (obj == null) {
+                    return new TrialResponse(
+                        400,
+                        null,
+                        `unknown trial state: ${res.data.name}`
+                    )
+                }
+                return new TrialResponse(200, obj, null)
+            } else {
+                return new TrialResponse(res.status, null, null)
+            }
+        } catch (err) {
+            const [status, response] = axiosErrorResponse(err)
+            console.warn(`GET ${url} failed: ${response}`)
+            return new TrialResponse(status, null, response)
+        }
+    }
+
     async getTrial(): Promise<TrialResponse> {
         const url = `${this.config.urlBase}/api/trial`
         try {
             console.info(`GET ${url}`)
             const res = await axios.get(url)
             if (res.status == 200) {
-                let obj: TrialObj
-                switch (res.data.name) {
-                    case 'Wait':
-                        obj = {
-                            version: res.data.version,
-                            name: res.data.name,
-                            timestamp: res.data.timestamp,
-                        }
-                        break
-                    case 'Trial Start':
-                        obj = {
-                            version: res.data.version,
-                            name: res.data.name,
-                            timestamp: res.data.timestamp,
-                            trial_id: res.data.trial_id,
-                            num_targets: res.data.num_targets,
-                            type: res.data.type,
-                            coordinates: res.data.coordinates,
-                        }
-                        break
-                    case 'Trial End':
-                        obj = {
-                            version: res.data.version,
-                            name: res.data.name,
-                            timestamp: res.data.timestamp,
-                            trial_id: res.data.trial_id,
-                        }
-                        break
-                    default:
-                        return new TrialResponse(
-                            400,
-                            null,
-                            `unknown trial state: ${res.data.name}`
-                        )
+                const obj = this.responseToObj(res.data)
+                if (obj == null) {
+                    return new TrialResponse(
+                        400,
+                        null,
+                        `unknown trial state: ${res.data.name}`
+                    )
                 }
                 return new TrialResponse(200, obj, null)
             } else {
