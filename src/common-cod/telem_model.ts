@@ -55,7 +55,6 @@ export class TelemModel {
     }
 
     async writeTelem(v0Telem: v0Telemetry) {
-        // TODO
         console.info('-> write: ', v0Telem)
         const doc = this.telemV0toDocV0(v0Telem) as TelemDocV0
         const q = `INSERT INTO ${COLLECTION} DOCUMENTS (:doc)`
@@ -88,6 +87,40 @@ export class TelemModel {
             ).toObject()
         }
         return [val._id, vt]
+    }
+
+    // TODO demo interface for getting / consuming telemetery in one shot
+    async consumeTelem(): Promise<v0Telemetry[]> {
+        this.ensureSubscribed()
+        const records: v0Telemetry[] = []
+        const q = this.telemQuery()
+        const qResult = await this.store!.execute(q)
+        qResult.items.forEach(async (qi: QueryResultItem) => {
+            if (!qi || !qi.value) {
+                console.debug('Ignoring empty query item.')
+                return
+            }
+            const val = qi.value
+            if (val.model_version != MODEL_VERSION) {
+                console.warn(
+                    'Got doc with unsupported model_version ',
+                    val.model_version
+                )
+            }
+            const [id, telem] = this.queryItemToV0TelemWithId(val)
+            records.push(telem)
+            console.debug('Consuming telemetry record id: ', id)
+            const updateQ = `UPDATE ${COLLECTION} SET consumed = true WHERE _id = :id`
+            await this.store!.execute(updateQ, { id: id })
+        })
+        return records
+    }
+
+    private ensureSubscribed() {
+        if (!this.sub) {
+            const q = this.telemQuery()
+            this.sub = this.dittoCod.registerSubscription(q)
+        }
     }
 
     // Subscribe to updates on telemetry records. Supply a callback which will

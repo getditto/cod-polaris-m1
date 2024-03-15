@@ -14,6 +14,7 @@ import {
 import { HttpStatus } from '../common-cod/basic_http.js'
 import { TrialModel } from '../common-cod/trial_model.js'
 import { LogLevel, getLogLevel, setLogLevel } from '../logger.js'
+import { TelemModel } from '../common-cod/telem_model.js'
 
 setLogLevel(LogLevel.debug)
 class TestFixture {
@@ -21,6 +22,7 @@ class TestFixture {
     dittoCod: DittoCOD
     config: Config
     trialModel: TrialModel | null = null
+    telemModel: TelemModel | null = null
     constructor() {
         this.config = new Config('./base-config.json.example')
         if (this.config.isUnitTestConfig()) {
@@ -33,9 +35,15 @@ class TestFixture {
 
     async start() {
         this.trialModel = new TrialModel(this.dittoCod, this.config)
+        this.telemModel = new TelemModel(this.dittoCod, this.config)
         await this.dittoCod.start(getLogLevel() == LogLevel.debug)
         await this.trialModel!.start()
-        this.httpServer = new HttpServer(this.trialModel!, this.config)
+        await this.telemModel!.start()
+        this.httpServer = new HttpServer(
+            this.trialModel!,
+            this.telemModel!,
+            this.config
+        )
         await this.httpServer!.start()
     }
     async stop() {
