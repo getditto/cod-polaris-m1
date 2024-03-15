@@ -1,15 +1,7 @@
 import { IncomingMessage, ServerResponse } from 'node:http'
 
 import { Config } from '../common-cod/config.js'
-import {
-    Geometry,
-    Timestamp,
-    TrialId,
-    v0TrialEnd,
-    v0TrialStart,
-    v0TrialObj,
-    v0Telemetry,
-} from '../common-cod/protocol.js'
+import { v0TrialObj, v0Telemetry } from '../common-cod/protocol.js'
 import { CondPromise } from '../util/cond_promise.js'
 import {
     CONTENT_TYPE_JSON_CORS_ANY,
@@ -51,33 +43,25 @@ export class HttpServer {
     }
 
     // Long-poll GET waiting for start command
-    private async handleStart(tid: TrialId, rep: ServerResponse) {
-        console.debug('Received trial start:', tid)
-        // XXX TODO implement
-        const ts = new Timestamp()
-        const id = new TrialId()
-        const num_targets = 3
-        const geom = new Geometry()
+    private async handleStart(rep: ServerResponse) {
+        console.debug('await trial start')
+        const res = await this.trialModel.awaitTrial('Trial Start')
+        if (res.errorStr) {
+            throw new Error(res.errorStr)
+        }
         rep.writeHead(HttpStatus.Ok, CONTENT_TYPE_JSON_CORS_ANY)
-        rep.end(
-            new v0TrialStart(
-                ts,
-                id,
-                num_targets,
-                geom.type,
-                geom.coordinates
-            ).serialize()
-        )
+        rep.end(res.result!.serialize())
     }
 
     // Long-poll GET waiting for start command
-    private async handleEnd(tid: TrialId, rep: ServerResponse) {
-        console.debug('Received trial end:', tid)
-        // XXX TODO implement
-        const ts = new Timestamp()
-        const id = new TrialId()
+    private async handleEnd(rep: ServerResponse) {
+        console.debug('await trial end')
+        const res = await this.trialModel.awaitTrial('Trial End')
+        if (res.errorStr) {
+            throw new Error(res.errorStr)
+        }
         rep.writeHead(HttpStatus.Ok, CONTENT_TYPE_JSON_CORS_ANY)
-        rep.end(new v0TrialEnd(ts, id).serialize())
+        rep.end(res.result!.serialize())
     }
 
     private async handleTrial(req: IncomingMessage, res: ServerResponse) {
@@ -88,14 +72,13 @@ export class HttpServer {
             if (toks.length == 2) {
                 // GET /api/trial -> non-blocking, latest state
                 return this.handleState(res)
-            } else if (toks.length == 4) {
-                const trialId = TrialId.fromString(toks[2])
-                if (toks[3] == 'start') {
+            } else if (toks.length == 3) {
+                if (toks[2] == 'start') {
                     // GET /api/trial/<id>/start -> block for start
-                    return this.handleStart(trialId, res)
-                } else if (toks[3] == 'end') {
+                    return this.handleStart(res)
+                } else if (toks[2] == 'end') {
                     // GET /api/trial/<id>/end -> block for end
-                    return this.handleEnd(trialId, res)
+                    return this.handleEnd(res)
                 }
             }
         }
