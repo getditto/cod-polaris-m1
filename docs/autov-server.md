@@ -122,12 +122,12 @@ to the client.
 
 #### A.I.2 Blocking Query
 
-`GET /api/trial/<trial-id>/start`
+`GET /api/trial/start`
 
-`GET /api/trial/<trial-id>/end`
+`GET /api/trial/end`
 
-These blocking queries will not return a response until the corresponding
-command was received for the given trial ID. The `start` and `end` endpoints
+These blocking queries will not return a response until the command was received
+for the most recent trial ID. The `start` and `end` endpoints
 wait for receipt of `Trial Start` and `Trial End` commands, respectively. The
 response formats will be identical to those specified above in section
 [A.I.1](#ai1-non-blocking-query).
@@ -137,9 +137,10 @@ _Note:_
 1. _These should blocking queries should probably be websocket-based callbacks
    instead. Otherwise, clients need to handle timeouts and retries gracefully._
 
-2. _We could also omit the `/<trial-id>` as part of the path and either (a) only
-   return information about latest trial, or (b) add `trial-id` as an optional
-   query parameter._
+2. _We could also add `/<trial-id>` as part of the path, i.e.
+   `/api/trial/<trial-id>/start`, or as a query parameter, and block until that
+   particular trial reaches the desired state._
+
 
 ### A.II. Telemetry Reporting
 
