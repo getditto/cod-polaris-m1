@@ -34,7 +34,7 @@ jobs:
         with:
           node-version: "20.x"
           cache: 'npm'
-      - run: npm ci
+      - run: npm install
       - run: npm run build
 
       # This step uses [docker/metadata-action](https://github.com/docker/metadata-action#about) to extract tags and labels that will be applied to the specified image. The `id` "meta" allows the output of this step to be referenced in a subsequent step. The `images` value provides the base name for the tags and labels.
