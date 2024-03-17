@@ -22,5 +22,5 @@ COPY dist /app/dist
 RUN npm install
 
 RUN chmod +x /app/start_node.sh
-ENTRYPOINT /app/start_node.sh
+ENTRYPOINT ["/app/start_node.sh"]
 CMD ["autov"]
