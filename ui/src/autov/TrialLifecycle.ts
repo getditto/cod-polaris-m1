@@ -9,6 +9,7 @@ export class AvStatus {
     heading: number
     behavior: string
     missionPhase: string
+    telemGen: TelemGenerator | null = null
     constructor(
         lat: number,
         lon: number,
@@ -76,13 +77,18 @@ class TelemReporter {
         setTimeout(() => this.loop(), 0)
     }
 
-    async stop() {
+    stop() {
         this.running = false
     }
 
     async loop() {
         while (this.running) {
             await this.reportTelem()
+            console.debug(
+                'TelemReporter.loop: waiting ',
+                this.intervalSec,
+                ' sec.'
+            )
             await new Promise((r) => setTimeout(r, this.intervalSec * 1000))
         }
     }
@@ -110,12 +116,15 @@ export class TrialLifecycle {
     armCb: ArmCb
     logCb: LogCb
     state: TrialState
+    telemRate: number
+    telem: TelemReporter | null = null
     constructor(
         client: AutovClient,
         trialStatusCb: TrialStatusCb,
         avStatusCb: AvStatusCb,
         armCb: ArmCb,
-        logCb: LogCb
+        logCb: LogCb,
+        telemRate: number
     ) {
         this.client = client
         this.trialStatusCb = trialStatusCb
@@ -123,6 +132,7 @@ export class TrialLifecycle {
         this.armCb = armCb
         this.logCb = logCb
         this.state = TrialState.Wait
+        this.telemRate = telemRate
     }
 
     handleErrResponse(response: TrialResponse): boolean {
@@ -137,15 +147,22 @@ export class TrialLifecycle {
         return fail
     }
 
+    setTelemRate(rate: number) {
+        console.debug('setTelemRate: ', rate)
+        this.telemRate = rate
+        this.telem?.setIntervalSec(rate)
+    }
+
     async start() {
         // Wait for Start
         console.debug('trial: waiting for Start')
-        const telem = new TelemReporter(
+        this.telem = new TelemReporter(
             this.client,
             this.avStatusCb,
-            this.logCb
+            this.logCb,
+            this.telemRate
         )
-        telem.wait()
+        this.telem.wait()
         const response: TrialResponse = await this.client.awaitTrial(true)
         if (this.handleErrResponse(response)) {
             this.logCb(LogEntry.api('GET /api/trial/start', false))
@@ -155,7 +172,7 @@ export class TrialLifecycle {
         // Got Start
         this.logCb(LogEntry.api('GET /api/trial/start', true))
         this.trialStatusCb(TrialState.Start)
-        telem.start()
+        this.telem.start()
 
         // Wait for End
         console.debug('trial: waiting for End')
@@ -167,8 +184,9 @@ export class TrialLifecycle {
 
         // Got End
         console.debug('trial: completed')
-        telem.stop()
+        this.telem.stop()
         this.trialStatusCb(TrialState.End)
         this.armCb(false)
+        this.telem = null
     }
 }

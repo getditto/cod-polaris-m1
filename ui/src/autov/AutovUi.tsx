@@ -1,7 +1,7 @@
 import { Box, Grid } from '@mui/material'
 import AutovControls from './AutovControls'
 import Log, { LogEntry } from '../common/Log'
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import { AutovClient, TrialResponse } from './AutovClient'
 import { AutovConfig } from './Config'
 import TrialStatus from '../common/TrialStatus'
@@ -24,6 +24,17 @@ function AutovUi() {
     const [armEnabled, setArmEnabled] = useState<boolean>(true)
 
     const [avStatus, setAvStatus] = useState<AvStatus>(AvStatus.preInit())
+
+    const [telemRate, setTelemRate] = useState(10)
+    const trialLifecycle = useRef<TrialLifecycle | null>(null)
+
+    const updateTelemRate = (rate: number) => {
+        if (trialLifecycle.current) {
+            trialLifecycle.current.setTelemRate(rate)
+        }
+        setTelemRate(rate)
+        console.debug("Updated telemetry rate to ", rate)
+    }
 
     function appendLog(row: LogEntry) {
         setLogRows([row, ...logRows])
@@ -71,9 +82,12 @@ function AutovUi() {
                     setTrialStatus,
                     setAvStatus,
                     setArmed,
-                    appendLog
+                    appendLog,
+                    telemRate,
                 )
+                trialLifecycle.current = lifecycle
                 await lifecycle.start()
+                trialLifecycle.current = null
                 setArmEnabled(true)
             }, 0)
         }
@@ -106,6 +120,8 @@ function AutovUi() {
                 onArm={onArm}
                 armed={armed}
                 armEnabled={armEnabled}
+                telemRate={telemRate}
+                setTelemRate={updateTelemRate}
             />
             <Log rows={logRows} />
         </Box>
