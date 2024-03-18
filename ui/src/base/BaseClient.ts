@@ -39,7 +39,7 @@ export class BaseClient {
     }
 
     async startTrial(id: string): Promise<StartEndResponse> {
-        const url = `${this.config.urlBase}/api/trial_start`
+        const url = `${this.config.baseUrl}/api/trial_start`
         const msg = makeTrialStart(id)
         try {
             console.info(`POST ${url}`)
@@ -62,7 +62,7 @@ export class BaseClient {
     }
 
     async endTrial(id: string): Promise<StartEndResponse> {
-        const url = `${this.config.urlBase}/api/trial_end`
+        const url = `${this.config.baseUrl}/api/trial_end`
         const msg = makeTrialEnd(id)
         try {
             console.info(`POST ${url}`)
@@ -86,7 +86,7 @@ export class BaseClient {
 
     async consumeTelem(): Promise<TelemRecord[]> {
         const records: TelemRecord[] = []
-        const url = `${this.config.urlBase}/api/telemetry`
+        const url = `${this.config.baseUrl}/api/telemetry`
         try {
             console.info(`GET ${url}`)
             const res = await axios.get(url)

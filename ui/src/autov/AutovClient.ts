@@ -75,7 +75,7 @@ export class AutovClient {
 
     // Returns HTTP status (201 is success)
     async postTelem(telem: TelemRecord): Promise<number> {
-        const url = `${this.config.urlBase}/api/telemetry`
+        const url = `${this.config.autovUrl}/api/telemetry`
         let status = 400
         try {
             console.info(`POST ${url}`)
@@ -94,7 +94,7 @@ export class AutovClient {
     }
 
     async awaitTrial(wantStart: boolean): Promise<TrialResponse> {
-        const url = `${this.config.urlBase}/api/trial/${
+        const url = `${this.config.autovUrl}/api/trial/${
             wantStart ? 'start' : 'end'
         }`
         try {
@@ -121,7 +121,7 @@ export class AutovClient {
     }
 
     async getTrial(): Promise<TrialResponse> {
-        const url = `${this.config.urlBase}/api/trial`
+        const url = `${this.config.autovUrl}/api/trial`
         try {
             console.info(`GET ${url}`)
             const res = await axios.get(url)
