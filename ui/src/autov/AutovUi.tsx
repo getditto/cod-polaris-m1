@@ -90,11 +90,11 @@ function AutovUi() {
             >
                 Autonomy COD Client
             </Box>
-            <Grid container spacing={2}>
-                <Grid item xs={6}>
+            <Grid container spacing={8}>
+                <Grid item sx={{ p: 2 }} xs={6}>
                     <AvInfo config={config} />
                 </Grid>
-                <Grid item xs={6}>
+                <Grid item sx={{ py: 2 }} xs={6}>
                     <TrialStatus status={trialStatus} />
                 </Grid>
             </Grid>

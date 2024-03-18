@@ -72,6 +72,7 @@ class TelemReporter {
     // Post telemetry immediately to ack start message, and start interval loop
     async start() {
         this.running = true
+        this.telem.setStartStates()
         setTimeout(() => this.loop(), 0)
     }
 
@@ -84,6 +85,10 @@ class TelemReporter {
             await this.reportTelem()
             await new Promise((r) => setTimeout(r, this.intervalSec * 1000))
         }
+    }
+
+    setIntervalSec(sec: number) {
+        this.intervalSec = sec
     }
 
     async reportTelem(): Promise<void> {
