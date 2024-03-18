@@ -5,17 +5,23 @@ import BaseUi from './base/BaseUi'
 import AutovUi from './autov/AutovUi'
 
 const dark = createTheme({ palette: { mode: 'dark' } })
+
 function App() {
     //  const [count, setCount] = useState(0)
 
     return (
         <ThemeProvider theme={dark}>
-            <Box width="100%" height="100%" p={2} alignItems="flex-start">
-                <Grid container alignItems="flex-start" spacing={2}>
-                    <Grid item xs={6}>
+            <Box
+                sx={{
+                    display: 'flex',
+                    flexDirections: { md: 'column', lg: 'row' },
+                }}
+            >
+                <Grid container sx={{ height: '100vh' }}>
+                    <Grid item xs={12} lg={6}>
                         <AutovUi />
                     </Grid>
-                    <Grid item xs={6}>
+                    <Grid item xs={12} lg={6}>
                         <BaseUi />
                     </Grid>
                 </Grid>

@@ -5,41 +5,43 @@ import BaseCommands from './BaseCommands'
 import TrialStatus from '../common/TrialStatus'
 import { BaseClient, StartEndResponse } from './BaseClient'
 import { TelemRecord, Telemetry, TrialState } from '../common/types'
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import TelemView from '../common/TelemView'
 import { DEFAULT_TELEMETRY } from '../common/Default'
 import { BaseConfig } from './BaseConfig'
-import { genTrialIds } from '../common/util'
+import { assert, genTrialIds } from '../common/util'
 import { TelemReader } from './TelemReader'
 
 /* TSC still warns us: */
 /* eslint-disable @typescript-eslint/no-unused-vars */
 
 function BaseUi() {
-    // @ts-expect-error unused var
-    const [config, setConfig] = useState<BaseConfig>(new BaseConfig())
     const [trialStatus, setTrialStatus] = useState<TrialState>(TrialState.Wait)
     const [logRows, setLogRows] = useState<LogEntry[]>([])
     const [telem, setTelem] = useState<Telemetry>(DEFAULT_TELEMETRY)
     const trialIds = genTrialIds()
     const [trialId, setTrialId] = useState(trialIds[0])
 
-    const client = new BaseClient(config)
+    const [config, _setConfig] = useState(new BaseConfig())
+    const client = useRef(new BaseClient(config))
+    const telemReader = useRef(
+        new TelemReader(client.current, appendTelemArray, appendLog)
+    )
+    assert(telemReader.current != null, 'current null')
+    assert(
+        telemReader.current.running != null &&
+            telemReader.current.running != undefined,
+        'running null'
+    )
+    telemReader.current.start()
 
     function appendTelemArray(telem: TelemRecord[]) {
-        setTelem((prev) => {
-            const newTelem = prev
-            newTelem.push(...telem)
-            return newTelem
-        })
+        console.debug('Add telemetry: ', telem)
+        setTelem((prev) => [...telem, ...prev])
     }
 
     function appendLog(row: LogEntry) {
-        setLogRows((prev) => {
-            const newLog = prev
-            newLog.push(row)
-            return newLog
-        })
+        setLogRows((prev) => [row, ...prev])
     }
 
     function responseToLog(response: StartEndResponse, api: string): LogEntry {
@@ -50,12 +52,12 @@ function BaseUi() {
             sent: '',
             received: '',
         }
-        console.debug('responseToLog ', response, ' -> ', toLog)
+        console.debug('Add log ', toLog)
         return toLog
     }
 
     async function sendStart() {
-        const response = await client.startTrial(trialId)
+        const response = await client.current.startTrial(trialId)
         if (response.httpStatus == 200) {
             setTrialStatus(TrialState.Start)
         }
@@ -69,7 +71,7 @@ function BaseUi() {
     }
 
     async function sendEnd() {
-        const response = await client.endTrial(trialId)
+        const response = await client.current.endTrial(trialId)
         if (response.httpStatus == 200) {
             setTrialStatus(TrialState.End)
         }
@@ -87,14 +89,12 @@ function BaseUi() {
 
     async function onClear() {
         setLogRows([])
+        setTelem([])
     }
 
     async function onIdChange(event: React.ChangeEvent<{ value: unknown }>) {
         setTrialId(event.target.value as string)
     }
-
-    const telemReader = new TelemReader(client, appendTelemArray, appendLog)
-    telemReader.start()
 
     return (
         <Box sx={{ border: 1 }} m={2} p={2}>
@@ -125,9 +125,9 @@ function BaseUi() {
                     trialIds={trialIds}
                 />
             </Box>
-            <div>
+            <Box sx={{ pt: 4 }}>
                 <TelemView telem={telem} />
-            </div>
+            </Box>
             <Box sx={{ pt: 4 }}>
                 <Log rows={logRows} />
             </Box>

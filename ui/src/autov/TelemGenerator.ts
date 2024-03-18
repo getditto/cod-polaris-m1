@@ -12,8 +12,7 @@ const [MIN_VEL, MAX_VEL] = [5.0, 30.0]
 const DELTA_V_MAX = 1.0
 const CHANGE_BEHAVIOR_P = 0.15
 
-export type Behavior = 'transiting' | 'finding' | 'tracking'
-const BEHAVIORS: Behavior[] = ['transiting', 'finding', 'tracking']
+export type Behavior = 'loiter' | 'transiting' | 'finding' | 'tracking'
 export type MissionPhase = 'wait' | 'find' | 'identify' | 'close'
 const ACTIVE_PHASES: MissionPhase[] = ['find', 'identify', 'close']
 
@@ -52,15 +51,28 @@ export class TelemGenerator {
         this.heading = 270.0
         const approxSqMi = width * 55.1 * height * 69.0
         this.velocityMPH = (MIN_VEL + MAX_VEL) / 2
-        this.behavior = 'transiting'
+        this.behavior = 'loiter'
         this.missionPhase = 'wait'
         console.log(
             `TelemGenerator: id ${avId} entering from East in approx ${approxSqMi} sq mi area.`
         )
     }
 
+    public setStartStates(): void {
+        this.behavior = 'transiting'
+        this.missionPhase = 'find'
+    }
+
     public static default(avId: string = 'uav_1'): TelemGenerator {
         return new TelemGenerator(avId, [39.5296, -119.8138], 0.4, 0.4)
+    }
+
+    private wrapHeading() {
+        if (this.heading < 0) {
+            this.heading += 360
+        } else if (this.heading > 360) {
+            this.heading -= 360
+        }
     }
 
     // If we're getting close to an edge, return heading to move away from it.
@@ -98,6 +110,7 @@ export class TelemGenerator {
         }
         // Add a little randomness (+/1 3 degrees)
         deg += (Math.random() - 0.5) * 6
+        this.wrapHeading()
         console.debug(`turnFromEdge: edge ${edge}, heading ${deg}`)
         return deg
     }
@@ -107,12 +120,14 @@ export class TelemGenerator {
         const turn = this.turnFromEdge()
         if (turn != null) {
             this.heading = turn
+            this.wrapHeading()
         } else {
             if (Math.random() < TURN_P) {
                 const turnDelta = (Math.random() - 0.5) * 2 * TURN_MAX
-                const newHeading = this.heading + turnDelta
+                this.heading += turnDelta
+                this.wrapHeading()
                 console.debug(
-                    `genTelem: turning ${turnDelta} degrees to heading ${newHeading}`
+                    `genTelem: turning ${turnDelta} degrees to heading ${this.heading}`
                 )
             }
         }
@@ -137,10 +152,6 @@ export class TelemGenerator {
 
         // 4. Change behavior & phase, doesn't affect model
         if (Math.random() < CHANGE_BEHAVIOR_P) {
-            this.behavior =
-                BEHAVIORS[Math.floor(Math.random() * BEHAVIORS.length)]
-        }
-        if (Math.random() < CHANGE_BEHAVIOR_P) {
             if (isStarted) {
                 this.missionPhase =
                     ACTIVE_PHASES[
@@ -149,6 +160,15 @@ export class TelemGenerator {
             } else {
                 this.missionPhase = 'wait'
             }
+        }
+        if (this.missionPhase == 'wait') {
+            this.behavior = 'loiter'
+        } else if (this.missionPhase == 'find') {
+            this.behavior = 'transiting'
+        } else if (this.missionPhase == 'identify') {
+            this.behavior = 'tracking'
+        } else if (this.missionPhase == 'close') {
+            this.behavior = 'tracking'
         }
     }
 

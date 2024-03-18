@@ -1,57 +1,38 @@
-import {
-    Paper,
-    Table,
-    TableBody,
-    TableCell,
-    TableContainer,
-    TableHead,
-    TableRow,
-} from '@mui/material'
+import { Box } from '@mui/material'
 import { Telemetry } from './types'
+import { DataGrid } from '@mui/x-data-grid'
+import { shortUuid } from './util'
+
+const columns = [
+    { field: 'lat', headerName: 'Lat' },
+    { field: 'lon', headerName: 'Lon' },
+    { field: 'avId', headerName: 'ID' },
+    { field: 'heading', headerName: 'Heading' },
+    { field: 'behavior', headerName: 'Behavior' },
+    { field: 'mission_phase', headerName: 'Mission Phase' },
+]
 
 function TelemView({ telem }: { telem: Telemetry }) {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const rows = telem.map((t, _idx) => {
+        const o = {
+            id: shortUuid(),
+            lat: t.lat.toFixed(5),
+            lon: t.lon.toFixed(5),
+            avId: t.id,
+            heading: `${t.heading.toFixed(2)} °`,
+            behavior: t.behavior,
+            mission_phase: t.mission_phase,
+        }
+        return o
+    })
+
     return (
-        <TableContainer component={Paper}>
-            <Table
-                sx={{ minWidth: 650 }}
-                size="small"
-                aria-label="a dense table"
-            >
-                <TableHead>
-                    <TableRow>
-                        <TableCell>Location</TableCell>
-                        <TableCell>Alt.</TableCell>
-                        <TableCell>ID</TableCell>
-                        <TableCell>Heading</TableCell>
-                        <TableCell>Behavior</TableCell>
-                        <TableCell>Mission Phase</TableCell>
-                        <TableCell>Phase Loc</TableCell>
-                    </TableRow>
-                </TableHead>
-                <TableBody>
-                    {telem.map((row) => (
-                        <TableRow
-                            key={row.id}
-                            sx={{
-                                '&:last-child td, &:last-child th': {
-                                    border: 0,
-                                },
-                            }}
-                        >
-                            <TableCell component="th" scope="row">
-                                {row.lat}, {row.lon}
-                            </TableCell>
-                            <TableCell>{row.alt}</TableCell>
-                            <TableCell>{row.id}</TableCell>
-                            <TableCell>{row.heading}</TableCell>
-                            <TableCell>{row.behavior}</TableCell>
-                            <TableCell>{row.mission_phase}</TableCell>
-                            <TableCell>{row.phase_loc.type}</TableCell>
-                        </TableRow>
-                    ))}
-                </TableBody>
-            </Table>
-        </TableContainer>
+        <div style={{ width: '100%' }}>
+            <Box sx={{ height: 400, width: '100%' }}>
+                <DataGrid columns={columns} rows={rows} />
+            </Box>
+        </div>
     )
 }
 
