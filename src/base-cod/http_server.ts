@@ -133,7 +133,7 @@ export class HttpServer {
             res.end()
         }
         const telemRecords = await this.telemModel.consumeTelem()
-        const plainTelemObjs = telemRecords.map((t) => t.serialize())
+        const plainTelemObjs = telemRecords.map((t) => t.toObject())
         res.writeHead(HttpStatus.Ok, CONTENT_TYPE_JSON_CORS_ANY)
         res.end(JSON.stringify(plainTelemObjs))
     }
