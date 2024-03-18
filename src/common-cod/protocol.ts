@@ -356,10 +356,8 @@ export class v0Telemetry {
     behavior: string | undefined
     mission_phase: MissionPhaseV0 = 'wait'
     phase_loc?: GeomRecordV0
-    private toObject(): Record<
-        string,
-        string | number | GeomRecordV0 | undefined
-    > {
+
+    toObject(): Record<string, string | number | GeomRecordV0 | undefined> {
         return {
             lon: this.lon,
             lat: this.lat,

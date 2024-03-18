@@ -1,7 +1,13 @@
 import { assert } from 'console'
 import { DittoCOD } from '../ditto_cod.js'
 import { Config } from './config.js'
-import { CoordValueV0, GeomTypeV0, Geometry, v0Telemetry } from './protocol.js'
+import {
+    CoordValueV0,
+    GeomTypeV0,
+    Geometry,
+    Timestamp,
+    v0Telemetry,
+} from './protocol.js'
 import {
     DocumentID,
     QueryResult,
