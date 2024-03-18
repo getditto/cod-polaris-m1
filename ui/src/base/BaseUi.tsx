@@ -12,17 +12,13 @@ import { BaseConfig } from './BaseConfig'
 import { assert, genTrialIds } from '../common/util'
 import { TelemReader } from './TelemReader'
 
-/* TSC still warns us: */
-/* eslint-disable @typescript-eslint/no-unused-vars */
-
-function BaseUi() {
+function BaseUi({ config }: { config: BaseConfig }) {
     const [trialStatus, setTrialStatus] = useState<TrialState>(TrialState.Wait)
     const [logRows, setLogRows] = useState<LogEntry[]>([])
     const [telem, setTelem] = useState<Telemetry>(DEFAULT_TELEMETRY)
     const trialIds = genTrialIds()
     const [trialId, setTrialId] = useState(trialIds[0])
 
-    const [config, _setConfig] = useState(new BaseConfig())
     const client = useRef(new BaseClient(config))
     const telemReader = useRef(
         new TelemReader(client.current, appendTelemArray, appendLog)
