@@ -11,8 +11,8 @@ import {
     Switch,
     Typography,
 } from '@mui/material'
-import Slider from '@mui/material/Slider';
-import { Fragment } from 'react/jsx-runtime';
+import Slider from '@mui/material/Slider'
+import { Fragment } from 'react/jsx-runtime'
 
 function ArmSwtich({
     armed,
@@ -33,12 +33,17 @@ function ArmSwtich({
     )
 }
 
-
 function valuetext(value: number) {
-    return `${value}°C`;
+    return `${value}°C`
 }
 
-function DiscreteSlider({ seconds, setSeconds }: { seconds: seconds, setSeconds: (number) => void }) {
+function DiscreteSlider({
+    seconds,
+    setSeconds,
+}: {
+    seconds: seconds
+    setSeconds: (number) => void
+}) {
     return (
         <Box sx={{ flexGrow: 1, mx: 2 }}>
             <Slider
@@ -54,7 +59,7 @@ function DiscreteSlider({ seconds, setSeconds }: { seconds: seconds, setSeconds:
                 max={15}
             />
         </Box>
-    );
+    )
 }
 
 type poke = () => Promise<void>
@@ -74,9 +79,8 @@ function AutovControls({
     onArm: (armed: boolean) => void
     armed: boolean
     armEnabled: boolean
-    telemRate: number,
+    telemRate: number
     setTelemRate: (number) => void
-
 }) {
     const armSwitch = ArmSwtich({
         armed: armed,
@@ -96,13 +100,11 @@ function AutovControls({
                     <Button onClick={onClear}>Clear Log</Button>
                 </ButtonGroup>
             </Box>
-            <Box p={1} sx={{ display: 'flex', justifyContent: 'center', p:2 }}>
-                <Typography gutterBottom>
-                Telemetry Rate:
-                </Typography>
+            <Box p={1} sx={{ display: 'flex', justifyContent: 'center', p: 2 }}>
+                <Typography gutterBottom>Telemetry Rate:</Typography>
                 <DiscreteSlider seconds={telemRate} setSeconds={setTelemRate} />
                 <Typography id="telem-slider-val" gutterBottom>
-                {telemRate.toFixed(1).toString()}
+                    {telemRate.toFixed(1).toString()}
                 </Typography>
             </Box>
         </Fragment>
