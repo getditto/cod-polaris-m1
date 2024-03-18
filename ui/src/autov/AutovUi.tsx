@@ -10,14 +10,10 @@ import AvInfo from './AvInfo'
 import { AvStatus, TrialLifecycle } from './TrialLifecycle'
 import AvState from './AvState'
 
-/* TSC still warns us: */
-/* eslint-disable @typescript-eslint/no-unused-vars */
-function AutovUi() {
+function AutovUi({ config }: { config: AutovConfig }) {
     const [logRows, setLogRows] = useState<LogEntry[]>([])
     const [trialStatus, setTrialStatus] = useState<TrialState>(TrialState.Wait)
 
-    //@ts-expect-error unused var
-    const [config, setConfig] = useState<AutovConfig>(new AutovConfig())
     const client = new AutovClient(config)
 
     const [armed, setArmed] = useState<boolean>(false)
