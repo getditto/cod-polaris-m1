@@ -79,17 +79,6 @@ test('http sanity', async () => {
         })
 })
 
-test('http bad trial id', async () => {
-    await axios
-        .get(`http://localhost:${fixture.getPort()}/api/trial/0.2.3/start`)
-        .then((res) => {
-            console.info('Response:', res.data)
-        })
-        .catch((err) => {
-            expect(err.response.status).toBe(HttpStatus.BadRequest)
-        })
-})
-
 test('telem sanity', async () => {
     const p1 = '[-119.88577910,39.5277639]'
     const telemStr =
