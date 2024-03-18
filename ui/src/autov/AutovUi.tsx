@@ -33,7 +33,7 @@ function AutovUi() {
             trialLifecycle.current.setTelemRate(rate)
         }
         setTelemRate(rate)
-        console.debug("Updated telemetry rate to ", rate)
+        console.debug('Updated telemetry rate to ', rate)
     }
 
     function appendLog(row: LogEntry) {
@@ -83,7 +83,7 @@ function AutovUi() {
                     setAvStatus,
                     setArmed,
                     appendLog,
-                    telemRate,
+                    telemRate
                 )
                 trialLifecycle.current = lifecycle
                 await lifecycle.start()
