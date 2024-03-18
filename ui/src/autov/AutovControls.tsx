@@ -87,7 +87,6 @@ function AutovControls({
         onArm: onArm,
         enabled: armEnabled,
     })
-    // For now, a button group with dummy buttons
     return (
         <Fragment>
             <Box p={1} sx={{ display: 'flex', justifyContent: 'center' }}>
