@@ -75,7 +75,7 @@ export class TelemModel {
         vt.lon = val.lon
         vt.lat = val.lat
         vt.alt = val.alt
-        vt.timestamp = val.timestamp
+        vt.timestamp = Timestamp.fromString(val.timestamp),
         vt.id = val.node_id
         vt.heading = val.heading
         vt.behavior = val.behavior
