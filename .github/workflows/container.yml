@@ -34,7 +34,7 @@ jobs:
         with:
           node-version: "20.x"
           cache: 'npm'
-      - run: npm install
+      - run: npm ci
       - run: npm run build
 
       - name: Set up QEMU
