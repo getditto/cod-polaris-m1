@@ -17,6 +17,13 @@ export class Timestamp {
         return this.dateStr
     }
 
+    public equals(other: Timestamp | null): boolean {
+        if (other == null) {
+            return false
+        }
+        return this.dateStr == other.dateStr
+    }
+
     public static fromString(s: string): Timestamp {
         const date = new Date(s)
         return new Timestamp(date)

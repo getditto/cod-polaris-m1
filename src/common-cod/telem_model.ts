@@ -28,6 +28,8 @@ export class TelemModel {
     store: Store | null = null
     sub: SyncSubscription | null = null
 
+    lastConsumedTimestamp: Timestamp | null = null
+
     constructor(dittoCod: DittoCOD, config: Config) {
         this.dittoCod = dittoCod
         this.config = config
@@ -94,25 +96,37 @@ export class TelemModel {
         this.ensureSubscribed()
         const records: v0Telemetry[] = []
         const q = this.telemQuery()
-        const qResult = await this.store!.execute(q)
-        qResult.items.forEach(async (qi: QueryResultItem) => {
-            if (!qi || !qi.value) {
-                console.debug('Ignoring empty query item.')
-                return
+
+        // XXX TODO use subscription and callback instead of polling
+        const MAX_BLOCK_MS = 10000
+        const startTime = new Date().getTime()
+        while (records.length == 0) {
+            const qResult = await this.store!.execute(q)
+            qResult.items.forEach(async (qi: QueryResultItem) => {
+                if (!qi || !qi.value) {
+                    console.debug('Ignoring empty query item.')
+                    return
+                }
+                const [id, telem] = this.queryItemToV0TelemWithId(qi)
+                // TODO basic dedupe implementation for demo
+                if (telem.timestamp.equals(this.lastConsumedTimestamp)) {
+                    return
+                } else {
+                    this.lastConsumedTimestamp = telem.timestamp
+                }
+                records.push(telem)
+                console.debug('Consuming telemetry record id: ', id)
+                const updateQ = `UPDATE ${COLLECTION} SET consumed = true WHERE _id = :id`
+                await this.store!.execute(updateQ, { id: id })
+            })
+            if (records.length == 0) {
+                const now = new Date().getTime()
+                if (now - startTime > MAX_BLOCK_MS) {
+                    break
+                }
+                await new Promise((resolve) => setTimeout(resolve, 200))
             }
-            const val = qi.value
-            if (val.model_version != MODEL_VERSION) {
-                console.warn(
-                    'Got doc with unsupported model_version ',
-                    val.model_version
-                )
-            }
-            const [id, telem] = this.queryItemToV0TelemWithId(val)
-            records.push(telem)
-            console.debug('Consuming telemetry record id: ', id)
-            const updateQ = `UPDATE ${COLLECTION} SET consumed = true WHERE _id = :id`
-            await this.store!.execute(updateQ, { id: id })
-        })
+        }
         return records
     }
 
