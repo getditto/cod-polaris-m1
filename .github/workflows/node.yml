@@ -5,9 +5,7 @@ name: Typescript CI
 
 on:
   pull_request:
-    branches:
-      - 'main'
-      - 'af/*'
+    branches: [ "main" ]
 
 jobs:
   build:
