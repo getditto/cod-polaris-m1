@@ -2,5 +2,6 @@
     "baseUrl": "http://192.168.0.25:8081",
     "baseName": "Command Post",
     "autovUrl": "http://192.168.0.25:8082",
-    "avName": "uav_1"
+    "avName": "uav_1",
+    "bearerToken": "flux230{showroom"
 }

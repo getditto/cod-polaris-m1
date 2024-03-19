@@ -120,7 +120,7 @@ export class HttpServer {
         this.base.server.on(
             'request',
             (req: IncomingMessage, res: ServerResponse) => {
-                if (this.base.handleOptions(req, res)) {
+                if (this.base.handleCommon(req, res)) {
                     return
                 }
                 this.router(req, res).catch((e) => {
