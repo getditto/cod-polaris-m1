@@ -2,7 +2,11 @@ import axios from 'axios'
 import { HttpServer } from './http_server.js'
 import { Config } from '../common-cod/config.js'
 import { DittoCOD } from '../ditto_cod.js'
-import { HttpStatus } from '../common-cod/basic_http.js'
+import {
+    AuthHeader,
+    HttpStatus,
+    bearerToken,
+} from '../common-cod/basic_http.js'
 import { TrialModel } from '../common-cod/trial_model.js'
 import { TestDittoCOD } from '../test_ditto_cod.js'
 import { LogLevel, getLogLevel, setLogLevel } from '../logger.js'
@@ -49,6 +53,18 @@ class TestFixture {
     getPort(): number {
         return this.httpServer!.base.config.port
     }
+
+    authConfig(): Record<string, AuthHeader> {
+        return {
+            headers: bearerToken(this.httpServer!.base.config.bearerToken!),
+        }
+    }
+
+    badAuth(): Record<string, AuthHeader> {
+        return {
+            headers: bearerToken('badBearerToken1234'),
+        }
+    }
 }
 
 const fixture = new TestFixture()
@@ -63,7 +79,10 @@ afterAll(async () => {
 
 test('http sanity', async () => {
     await axios
-        .get(`http://localhost:${fixture.getPort()}/api/trial`)
+        .get(
+            `http://localhost:${fixture.getPort()}/api/trial`,
+            fixture.authConfig()
+        )
         .then((res) => {
             expect(res.status).toBe(HttpStatus.Ok)
             const obj = res.data
@@ -76,6 +95,21 @@ test('http sanity', async () => {
                 /\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}.*Z/
             )
             console.log('Validated GET /api/trial/ response from server')
+        })
+})
+
+test('http auth failure get', async () => {
+    await axios
+        .get(
+            `http://localhost:${fixture.getPort()}/api/trial`,
+            fixture.badAuth()
+        )
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        .then((res) => {
+            expect(false).toBe(true)
+        })
+        .catch((err) => {
+            expect(err.response.status).toBe(HttpStatus.Unauthorized)
         })
 })
 
@@ -96,7 +130,11 @@ test('telem sanity', async () => {
     const telem = v0Telemetry.fromString(telemStr)
     expect(telem).toBeDefined()
     await axios
-        .post(`http://localhost:${fixture.getPort()}/api/telemetry`, telemStr)
+        .post(
+            `http://localhost:${fixture.getPort()}/api/telemetry`,
+            telemStr,
+            fixture.authConfig()
+        )
         .then((res) => {
             expect(res.status).toBe(HttpStatus.Created)
         })
@@ -113,7 +151,11 @@ test('telem bad request', async () => {
     const telem = v0Telemetry.fromString(telemStr)
     expect(telem).toBeDefined()
     await axios
-        .post(`http://localhost:${fixture.getPort()}/api/telemetry`, telemStr)
+        .post(
+            `http://localhost:${fixture.getPort()}/api/telemetry`,
+            telemStr,
+            fixture.authConfig()
+        )
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
         .then((res) => {
             expect(false).toBe(true)

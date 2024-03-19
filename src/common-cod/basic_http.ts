@@ -4,9 +4,11 @@ import { CondPromise } from '../util/cond_promise.js'
 export class HttpConfig {
     host: string
     port: number
-    constructor(host: string, port: number) {
+    bearerToken: string | null = null
+    constructor(host: string, port: number, bearerToken: string | null) {
         this.host = host
         this.port = port
+        this.bearerToken = bearerToken
     }
 }
 
@@ -20,6 +22,14 @@ export enum HttpStatus {
     NotFound = 404,
     UnprocessableEntity = 422,
     TooManyRequests = 429,
+}
+
+export class AuthHeader {
+    Authorization: string = ''
+}
+
+export function bearerToken(tok: string): AuthHeader {
+    return { Authorization: `Bearer ${tok}` }
 }
 
 export function normalizeUrl(url: string): string {
@@ -85,7 +95,7 @@ export class BasicHttp {
         )
     }
 
-    handleOptions(req: IncomingMessage, rep: ServerResponse): boolean {
+    private handleOptions(req: IncomingMessage, rep: ServerResponse): boolean {
         console.debug(`handleOptions request: ${req.method} ${req.url}`)
         if (req.method === 'OPTIONS') {
             rep.writeHead(HttpStatus.NoConent, CORS_ALLOW_ANY)
@@ -93,6 +103,43 @@ export class BasicHttp {
             return true
         }
         return false
+    }
+
+    private checkAuthorized(
+        req: IncomingMessage,
+        rep: ServerResponse
+    ): boolean {
+        if (
+            this.config.bearerToken === null ||
+            this.config.bearerToken === ''
+        ) {
+            return true
+        }
+        let bearer: string | null = null
+        const auth = req.headers['authorization']
+        if (auth) {
+            const parts = auth.split(' ')
+            if (parts.length === 2 && parts[0] === 'Bearer') {
+                bearer = parts[1]
+            }
+        }
+        if (bearer == null || bearer != this.config.bearerToken) {
+            rep.writeHead(HttpStatus.Unauthorized, CORS_ALLOW_ANY)
+            rep.end()
+            return false
+        } else {
+            return true
+        }
+    }
+
+    // Handle http requests that are common to both services.
+    // Return true if the request is complete and response has been sent.
+    // Return false if the request still needs to be handled.
+    handleCommon(req: IncomingMessage, rep: ServerResponse): boolean {
+        if (this.checkAuthorized(req, rep) === false) {
+            return true
+        }
+        return this.handleOptions(req, rep)
     }
 
     async start() {
