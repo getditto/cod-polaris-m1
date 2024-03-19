@@ -11,7 +11,11 @@ import {
     v0TrialStart,
     v0TrialWait,
 } from '../common-cod/protocol.js'
-import { HttpStatus } from '../common-cod/basic_http.js'
+import {
+    AuthHeader,
+    HttpStatus,
+    bearerToken,
+} from '../common-cod/basic_http.js'
 import { TrialModel } from '../common-cod/trial_model.js'
 import { LogLevel, getLogLevel, setLogLevel } from '../logger.js'
 import { TelemModel } from '../common-cod/telem_model.js'
@@ -55,6 +59,12 @@ class TestFixture {
     getPort(): number {
         return this.httpServer!.base.config.port
     }
+
+    authConfig(): Record<string, AuthHeader> {
+        return {
+            headers: bearerToken(this.httpServer!.base.config.bearerToken!),
+        }
+    }
 }
 
 const fixture = new TestFixture()
@@ -72,8 +82,9 @@ test('base health check', async () => {
     const initMsg = new v0TrialWait()
     const postData = initMsg.serialize()
     const url = `http://localhost:${fixture.getPort()}/api/trial_start`
+    const aconfig = fixture.authConfig()
     await axios
-        .post(url, postData)
+        .post(url, postData, aconfig)
         .then((res) => {
             expect(res.status).toBe(HttpStatus.Ok)
         })
@@ -86,7 +97,7 @@ test('base health check', async () => {
     initMsg.version = 99
     const postBad = initMsg.serialize()
     await axios
-        .post(url, postBad)
+        .post(url, postBad, aconfig)
         .then((res) => {
             expect(res.status).toBe(HttpStatus.BadRequest)
         })
@@ -110,7 +121,7 @@ describe('base trial start', () => {
     test('valid trial start', async () => {
         const url = `http://localhost:${fixture.getPort()}/api/trial_start`
         await axios
-            .post(url, postData)
+            .post(url, postData, fixture.authConfig())
             .then((res) => {
                 expect(res.status).toBe(HttpStatus.Created)
             })
@@ -125,7 +136,7 @@ describe('base trial start', () => {
         const untypedObj = JSON.parse(postData)
         untypedObj.trial_id = '12.3'
         await axios
-            .post(url, untypedObj)
+            .post(url, untypedObj, fixture.authConfig())
             // eslint-disable-next-line @typescript-eslint/no-unused-vars
             .then((_res) => {
                 // axios rejects promises on non-200 status codes
@@ -146,7 +157,7 @@ describe('base trial end', () => {
     test('valid trial end', async () => {
         const url = `http://localhost:${fixture.getPort()}/api/trial_end`
         await axios
-            .post(url, postData)
+            .post(url, postData, fixture.authConfig())
             .then((res) => {
                 expect(res.status).toBe(HttpStatus.Created)
             })
@@ -161,7 +172,7 @@ describe('base trial end', () => {
         const untypedObj = JSON.parse(postData)
         untypedObj.trial_id = '12.3.213x'
         await axios
-            .post(url, untypedObj)
+            .post(url, untypedObj, fixture.authConfig())
             // eslint-disable-next-line @typescript-eslint/no-unused-vars
             .then((_res) => {
                 // axios rejects promises on non-200 status codes
@@ -170,6 +181,26 @@ describe('base trial end', () => {
             .catch((err) => {
                 expect(err.response.status).toBe(HttpStatus.UnprocessableEntity)
                 expect(err.response.data).toContain('Invalid trial_id')
+            })
+    })
+})
+
+describe('test auth failure', () => {
+    const initMsg = new v0TrialWait()
+    const postData = initMsg.serialize()
+    test('auth fail health check', async () => {
+        const url = `http://localhost:${fixture.getPort()}/api/trial_start`
+        const aconfig = fixture.authConfig()
+        aconfig.headers.Authorization = 'Bearer badtoken3243134'
+        await axios
+            .post(url, postData, aconfig)
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
+            .then((res) => {
+                // axios rejects promises on non-200 status codes
+                expect(false).toBeTruthy()
+            })
+            .catch((err) => {
+                expect(err.response.status).toBe(HttpStatus.Unauthorized)
             })
     })
 })

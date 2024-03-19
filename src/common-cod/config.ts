@@ -11,6 +11,7 @@ export class Config extends ConfigBase {
             'TEST_DURATION_SEC',
             'HTTP_PORT',
             'HTTP_HOST',
+            'BEARER_TOKEN',
         ])
         this.addStrDefaults(
             new Map([
@@ -23,7 +24,8 @@ export class Config extends ConfigBase {
     toHttpConfig(): HttpConfig {
         return new HttpConfig(
             this.getStr('HTTP_HOST'),
-            parseInt(this.getStr('HTTP_PORT'))
+            parseInt(this.getStr('HTTP_PORT')),
+            this.getStr('BEARER_TOKEN')
         )
     }
 
