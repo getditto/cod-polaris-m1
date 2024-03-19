@@ -3,14 +3,14 @@ import AutovControls from './AutovControls'
 import Log, { LogEntry } from '../common/Log'
 import { useRef, useState } from 'react'
 import { AutovClient, TrialResponse } from './AutovClient'
-import { AutovConfig } from './Config'
 import TrialStatus from '../common/TrialStatus'
 import { TrialState } from '../common/types'
 import AvInfo from './AvInfo'
 import { AvStatus, TrialLifecycle } from './TrialLifecycle'
 import AvState from './AvState'
+import { UiConfig } from '../common/UiConfig'
 
-function AutovUi({ config }: { config: AutovConfig }) {
+function AutovUi({ config }: { config: UiConfig }) {
     const [logRows, setLogRows] = useState<LogEntry[]>([])
     const [trialStatus, setTrialStatus] = useState<TrialState>(TrialState.Wait)
 
