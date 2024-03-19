@@ -5,6 +5,7 @@ import {
     v0TrialEnd,
     v0TrialWait,
     v0TrialStart,
+    v0Telemetry,
 } from './protocol.js'
 
 // Test ser/deser of Timestamp
@@ -84,4 +85,52 @@ test('geometry serde', () => {
     str = src.serialize()
     roundTrip = Geometry.fromString(str)
     expect(roundTrip).toEqual(src)
+})
+
+test('geometery deserialize', () => {
+    const gstr =
+        '{"type":"Polygon","coordinates":[' +
+        '[-119.88577910818,39.5277639091],[-119.88077910818,39.5277639091],' +
+        '[-119.88077910818,39.5317639091],[-119.88576818351,39.5317649091],' +
+        '[-119.88587910818,39.5297639098],[-119.88577910818,39.5277639091]]}'
+    const g = Geometry.fromString(gstr)
+    expect(g.isValid()).toBe(true)
+})
+
+test('telemetry serde', () => {
+    const src = new v0Telemetry()
+    src.lon = -122.67648
+    src.lat = 45.52306
+    src.alt = 101
+    src.id = 'test_vehicle1'
+    src.heading = 92.312
+    src.behavior = 'some-algorithm'
+    src.mission_phase = 'find'
+    const pt = [-119.88577910818351, 39.5277639091685]
+    const coords = [
+        pt,
+        [pt[0] + 0.005, pt[1]],
+        [pt[0] + 0.005, pt[1] + 0.004],
+        [pt[0] + 0.00001, pt[1] + 0.004001],
+        [pt[0] - 0.0001, pt[1] + 0.002],
+        pt,
+    ]
+    src.phase_loc = Geometry.polygon(coords).toObject()
+    expect(Geometry.isValidRecord(src.phase_loc!)).toBe(true)
+    const str = src.serialize()
+    const roundTrip = v0Telemetry.fromString(str)
+    expect(roundTrip).toEqual(src)
+})
+
+test('telemetry deserialize', () => {
+    const telemStr =
+        '{"lon":-122.67648,"lat":45.52306,"alt":101,' +
+        '"timestamp":"2024-03-11T22:26:23.718Z","id":"test_vehicle1",' +
+        '"heading":92.312,"behavior":"some-algorithm","mission_phase":"find",' +
+        '"phase_loc":{"type":"Polygon","coordinates":[' +
+        '[-119.88577910818,39.5277639091],[-119.88077910818,39.5277639091],' +
+        '[-119.88077910818,39.5317639091],[-119.88576818351,39.5317649091],' +
+        '[-119.88587910818,39.5297639098],[-119.88577910818,39.5277639091]]}}'
+    const t = v0Telemetry.fromString(telemStr)
+    expect(t).toBeDefined()
 })

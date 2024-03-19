@@ -14,3 +14,5 @@ The API specifications for each service can be found here:
 An overview of the Ditto SDK integration is here:
 
 - [Ditto SDK Integration](ditto-sdk.md)
+
+The demo UI is covered [here](../ui/README.md).

@@ -48,14 +48,14 @@ under the name `_id` in ditto documents, which treats them as the primary key.
 
 | HTTP API Field  | Ditto document field |
 |-----------------|----------------------|
+| *version*  | _Not present: this is the HTTP API version, which is different than the Ditto document schema `model_version`._ |
+| _not present_     | **model\_version**: version of the data model / schema, per [Version](#version) above.|
 | trial\_id       | _id |
 | name            | name |
 | timestamp       | timestamp |
-| *version*  | _Not present: this is the HTTP API version, which is different than the Ditto document schema `model_version`._ |
 | num\_targets     | num\_targets |
 | type     | type |
 | coordinates     | coordinates |
-| _not present_     | *model\_version*: version of the data model / schema, per [Version](#version) above.|
 
 where `name` is one of `Trial Start` or `Trial End`. We currently do not store
 a document with the `Wait` state (`name`), but the HTTP API returns a `Wait`
@@ -67,3 +67,45 @@ responses are left intact. That is, we do not delete or modify `num_targets`,
 `type` and `coordinates` on Start -> End. We do update `name` and `timestamp`,
 though, to correspond with values received by the base-cod when it gets the
 `Trial End` command.
+
+### Telemetry
+
+The Ditto COD stores telemetry in the `telemetry` collection. Each telemetry
+record written by a node (entity / vehicle) is stored as a separate document in
+the collection. Many of the HTTP API fields (defined in [Autov Server
+A.II.](./autov-server.md#aii-telemetry-reporting)) are used directly in the
+Ditto document (data model), with some key differences:
+
+| HTTP API Field  | Ditto document field |
+|-----------------|----------------------|
+| *version*  | _Not present: this is the HTTP API version, which is different than the Ditto document schema `model_version`._ |
+| _not present_   | **model\_version**: version of the data model / schema, per [Version](#version) above.
+| lon             | lon |
+| lat             | lat |
+| alt             | alt |
+| timestamp       | timestamp |
+| id              | node\_id |
+| heading         | heading |
+| behavior        | behavior |
+| mission\_phase  | mission\_phase |
+| phase\_loc  | phase\_loc |
+| _not present_   | consumed |
+| _not present_   | **epoch** |
+
+We give the HTTP API's `id` field a more descriptive name, `node_id`, to
+clarify that it identifies the sending node (i.e. entity / vehicle).
+
+We also add some additional fields to the Ditto documents to help implement
+end-to-end reliability and limit storage requirements. The `consumed` field
+MUST only be set to `true` by the base-cod service after it has reliably
+delivered the corresponding record to the base destination.
+
+The `epoch` field is added to allow us to separate telemetry data between
+different missions or trials. `epoch` is a unsigned 64-bit integer value that
+monotonically increases as new missions / trials begin and end. In v0, this
+field is an _internal implementation detail_ as far as clients of
+the COD HTTP APIs are concerned: we do not expose the `epoch` to HTTP API
+clients. The autov-cod and base-cod services MAY use the `epoch` to manage
+record lifetime and retention; it MAY derive telemetry epoch numbers from the
+stream of `Trial Start` and `Trial End` messages, or use another method to
+separate the histrorical stream of telemetry records into `epoch`s.

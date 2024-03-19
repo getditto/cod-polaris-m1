@@ -4,6 +4,7 @@ import { HttpServer } from './http_server.js'
 import { TrialModel } from '../common-cod/trial_model.js'
 import { signalOrTimeout } from '../util/util.js'
 import { LogLevel, getLogLevel, setLogLevelStr } from '../logger.js'
+import { TelemModel } from '../common-cod/telem_model.js'
 
 function usage() {
     console.log('Usage: node index.js [config-filename]')
@@ -32,10 +33,15 @@ async function main() {
 
     const dittoCod = new DittoCOD(config.toDittoConfig())
     const trialModel = new TrialModel(dittoCod, config)
+    const telemModel = new TelemModel(dittoCod, config)
+    // This will be used if/when we need to call out to another service to publish telemetry
+    //const telemReporter = new TelemReporter(telemModel, config)
     await dittoCod.start(getLogLevel() == LogLevel.debug)
     await trialModel.start()
+    await telemModel.start()
+    //await telemReporter.start()
 
-    const httpServer = new HttpServer(trialModel, config)
+    const httpServer = new HttpServer(trialModel, telemModel, config)
     await httpServer.start()
     await signalOrTimeout(0)
 }

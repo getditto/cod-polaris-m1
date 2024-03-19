@@ -14,6 +14,7 @@ export class HttpConfig {
 export enum HttpStatus {
     Ok = 200,
     Created = 201,
+    NoConent = 204, // only used for http OPTIONS
     BadRequest = 400,
     Unauthorized = 401,
     NotFound = 404,
@@ -28,8 +29,32 @@ export function normalizeUrl(url: string): string {
     return url
 }
 
-export const JSON_CONTENT = 'application/json; charset=utf-8'
-export const CONTENT_TYPE_JSON = { 'Content-Type': JSON_CONTENT }
+// Basic prevention from XSS getting through our exception -> http response
+// body path via some future 3rd party dependency
+export function sanitizeResponse(body: string) {
+    return body.replace(/</g, '&lt;').replace(/>/g, '&gt;')
+}
+
+const JSON_CONTENT = 'application/json; charset=utf-8'
+const PLAIN_TEXT = 'text/plain; charset=utf-8'
+const CONTENT_TYPE_JSON = { 'Content-Type': JSON_CONTENT }
+const CONTENT_TYPE_PLAIN = { 'Content-Type': PLAIN_TEXT }
+export const CORS_ALLOW_ANY = {
+    'Access-Control-Allow-Origin': '*',
+    'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+    'Access-Control-Allow-Headers':
+        'Content-Type, Content-Length, X-Requested-With',
+    'Access-Control-Max-Age': '86400',
+    Vary: 'Origin',
+}
+export const CONTENT_TYPE_JSON_CORS_ANY = {
+    ...CORS_ALLOW_ANY,
+    ...CONTENT_TYPE_JSON,
+}
+export const CONTENT_TYPE_PLAIN_CORS_ANY = {
+    ...CORS_ALLOW_ANY,
+    ...CONTENT_TYPE_PLAIN,
+}
 
 export class BasicHttp {
     // TODO factor out http-specific config
@@ -60,6 +85,16 @@ export class BasicHttp {
         )
     }
 
+    handleOptions(req: IncomingMessage, rep: ServerResponse): boolean {
+        console.debug(`handleOptions request: ${req.method} ${req.url}`)
+        if (req.method === 'OPTIONS') {
+            rep.writeHead(HttpStatus.NoConent, CORS_ALLOW_ANY)
+            rep.end()
+            return true
+        }
+        return false
+    }
+
     async start() {
         await this.registerEvents()
 
@@ -80,4 +115,19 @@ export class BasicHttp {
         // waits for http.Server 'close' event
         await this.serverFinished.getPromise()
     }
+}
+
+export async function requestData(req: IncomingMessage): Promise<string> {
+    return new Promise((resolve, reject) => {
+        let data = ''
+        req.on('data', (chunk) => {
+            data += chunk
+        })
+        req.on('end', () => {
+            resolve(data)
+        })
+        req.on('error', (err) => {
+            reject(err)
+        })
+    })
 }

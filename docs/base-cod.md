@@ -31,3 +31,18 @@ autonomous vehicle (autov) side, as specified in
   with success (200 OK) if system health is good.
 
 - Only `"Trial End"` messages are accepted by the `/api/trial_end/` endpoint.
+
+### B.II. Telemetry
+
+Version 0 of the telemetry reporting API mimics existing services; instead of
+exposing a REST API endpoint to allow a client (i.e. the base) to query for new
+telemetry reports, the Base COD service initiates connections to existing base
+services and uses HTTP POST to update them.
+
+`Base COD client -> POST <base-API-server>/api/telemetry'`
+
+The requirements for telemetry message format and behavoir of these messages is
+the same as specified in the [AutoV COD API section](aii-telemetry-reporting).
+Essentially, in version 0 here, the COD acts as an intelligent proxy for
+telemetry messages, receiving them via its HTTP API on the autov-cod service,
+and sending them from its base-cod service to existing base services.

@@ -17,6 +17,13 @@ export class Timestamp {
         return this.dateStr
     }
 
+    public equals(other: Timestamp | null): boolean {
+        if (other == null) {
+            return false
+        }
+        return this.dateStr == other.dateStr
+    }
+
     public static fromString(s: string): Timestamp {
         const date = new Date(s)
         return new Timestamp(date)
@@ -24,13 +31,14 @@ export class Timestamp {
 }
 
 // GeoJSON geometry object of type point or polygon
-// Note: rest API spec uses the fields of this object directly (flattened)
-//   instead of including the object in its JSON. i.e. remove surrounding { }
+// Note: parts of the rest API spec uses the fields of this object directly
+// (flattened) instead of including the surrounding object in its JSON.
 // Points are currently 2-d only (no elevation supported)
 export type PointV0 = Array<number>
 export type PolygonV0 = Array<PointV0>
 export type CoordValueV0 = PointV0 | PolygonV0
 export type GeomTypeV0 = 'Point' | 'Polygon'
+export type GeomRecordV0 = { [key: string]: GeomTypeV0 | CoordValueV0 }
 
 export class Geometry {
     type: GeomTypeV0 = 'Point'
@@ -50,41 +58,59 @@ export class Geometry {
         geom.coordinates = coords
         return geom
     }
-
-    // Runtime check that this is a valid type of geometry
-    public isValid(): boolean {
-        if (this.type == 'Point') {
-            if (
-                this.coordinates.length != 2 ||
-                Array.isArray(this.coordinates[0])
-            ) {
-                return false
+    // Return null if given record is valid v0 geometry, else return
+    // string describing the error.
+    public static validationError(g: GeomRecordV0): string | null {
+        if (g.type == 'Point') {
+            if (g.coordinates.length != 2 || Array.isArray(g.coordinates[0])) {
+                return 'Point geometry must contain 2 numbers'
             }
-        } else if (this.type == 'Polygon') {
+        } else if (g.type == 'Polygon') {
             // Minimum polygon points are a triangle + one closing point
             // repeating the first
-            if (this.coordinates.length < 4) {
-                return false
+            if (g.coordinates.length < 4) {
+                return 'Polygon must have at least 4 points'
             }
-            if (!Array.isArray(this.coordinates[0])) {
-                return false
+            if (!Array.isArray(g.coordinates[0])) {
+                return 'Polygon coordinates must be arrays'
             }
-            for (const coord of this.coordinates) {
+            for (const coord of g.coordinates) {
                 // type coercion
                 const arr = coord as Array<number>
                 if (arr.length != 2) {
-                    return false
+                    return 'Each point must be 2 numbers'
                 }
             }
+            const last = g.coordinates[g.coordinates.length - 1] as PointV0
+            const first = g.coordinates[0] as PointV0
+            if (first[0] != last[0] || first[1] != last[1]) {
+                console.info('first: ', first, ' != last: ', last)
+                return 'Polygon not closed: last point must equal first'
+            }
         } else {
-            return false
+            return `Invalid geometry type ${g.type}`
         }
-        return true
+        return null
+    }
+
+    public static isValidRecord(g: GeomRecordV0): boolean {
+        return Geometry.validationError(g) == null
+    }
+
+    // Runtime check that this is a valid type of geometry
+    public isValid(): boolean {
+        return Geometry.isValidRecord(this.toObject())
+    }
+
+    toObject(): GeomRecordV0 {
+        return {
+            type: this.type,
+            coordinates: this.coordinates,
+        }
     }
 
     public serialize(): string {
-        // No customization yet
-        return JSON.stringify(this)
+        return JSON.stringify(this.toObject())
     }
 
     public static fromString(s: string): Geometry {
@@ -135,9 +161,16 @@ export class TrialId {
     }
 }
 
+export type TrialState = 'Trial Start' | 'Trial End' | 'Wait'
+
+export type TrialStartObjV0 = Record<
+    string,
+    string | number | CoordValueV0 | TrialState
+>
+
 export class v0TrialStart {
     version: number = 0
-    name: string = 'Trial Start'
+    name: TrialState = 'Trial Start'
     timestamp: Timestamp
     trial_id: TrialId
     num_targets: number
@@ -159,7 +192,7 @@ export class v0TrialStart {
     }
 
     // control serialization
-    private toObject(): Record<string, string | number | CoordValueV0> {
+    private toObject(): TrialStartObjV0 {
         return {
             version: this.version,
             name: this.name,
@@ -192,13 +225,42 @@ export class v0TrialStart {
             parsed.type,
             parsed.coordinates
         )
+        start.version = 0
+        return start
+    }
+
+    // TODO clean up / refactor serde in general
+    public static fromObject(o: TrialStartObjV0): v0TrialStart {
+        // throw if any fields are missing
+
+        for (const field of [
+            'name',
+            'timestamp',
+            'trial_id',
+            'num_targets',
+            'type',
+            'coordinates',
+        ]) {
+            if (!o[field]) {
+                throw new Error(`Trial start missing field ${field}`)
+            }
+        }
+        const start = new v0TrialStart(
+            Timestamp.fromString(o.timestamp as string),
+            TrialId.fromString(o.trial_id as string),
+            o.num_targets as number,
+            o.type as GeomTypeV0,
+            o.coordinates as CoordValueV0
+        )
         return start
     }
 }
 
+export type TrialEndObjV0 = Record<string, string | number>
+
 export class v0TrialEnd {
     version: number = 0
-    name: string = 'Trial End'
+    name: TrialState = 'Trial End'
     timestamp: Timestamp
     trial_id: TrialId
     constructor(ts: Timestamp, id: TrialId) {
@@ -232,6 +294,19 @@ export class v0TrialEnd {
         const end = new v0TrialEnd(parsed.timestamp, parsed.trial_id)
         return end
     }
+
+    public static fromObject(o: TrialEndObjV0): v0TrialEnd {
+        for (const field of ['timestamp', 'trial_id', 'name']) {
+            if (!o[field]) {
+                throw new Error(`Trial end missing field ${field}`)
+            }
+        }
+        const end = new v0TrialEnd(
+            Timestamp.fromString(o.timestamp as string),
+            TrialId.fromString(o.trial_id as string)
+        )
+        return end
+    }
 }
 
 export class v0TrialWait {
@@ -259,7 +334,7 @@ export class v0TrialWait {
             }
         })
         const init = new v0TrialWait()
-        init.version = parsed.version
+        init.version = parsed.version ?? 0
         init.name = parsed.name
         init.timestamp = parsed.timestamp
         return init
@@ -267,3 +342,71 @@ export class v0TrialWait {
 }
 
 export type v0TrialObj = v0TrialStart | v0TrialEnd | v0TrialWait
+
+export type MissionPhaseV0 = 'wait' | 'find' | 'identify' | 'close'
+
+export class v0Telemetry {
+    version = 0
+    lon: number = 0
+    lat: number = 0
+    alt: number | undefined
+    timestamp: Timestamp = new Timestamp()
+    id: string = ''
+    heading: number = -1
+    behavior: string | undefined
+    mission_phase: MissionPhaseV0 = 'wait'
+    phase_loc?: GeomRecordV0
+
+    toObject(): Record<string, string | number | GeomRecordV0 | undefined> {
+        return {
+            lon: this.lon,
+            lat: this.lat,
+            alt: this.alt,
+            timestamp: this.timestamp.toString(),
+            id: this.id,
+            heading: this.heading,
+            behavior: this.behavior,
+            mission_phase: this.mission_phase,
+            phase_loc: this.phase_loc,
+        }
+    }
+
+    public serialize(): string {
+        return JSON.stringify(this.toObject())
+    }
+
+    public static fromString(s: string): v0Telemetry {
+        const parsed = JSON.parse(s, (key, value) => {
+            if (key == 'timestamp') {
+                return Timestamp.fromString(value)
+            } else {
+                return value
+            }
+        })
+        const t = new v0Telemetry()
+        t.lon = parsed.lon
+        t.lat = parsed.lat
+        t.alt = parsed.alt
+        t.timestamp = parsed.timestamp
+        t.id = parsed.id
+        t.heading = parsed.heading
+        t.behavior = parsed.behavior
+        t.mission_phase = parsed.mission_phase
+        t.phase_loc = parsed.phase_loc
+        return t
+    }
+
+    // Return null if object is valid, else return string describing the error.
+    validationError(): string | null {
+        if (this.heading < 0 || this.heading > 360) {
+            return 'Invalid heading ' + this.heading
+        }
+        if (this.id == '') {
+            return 'Empty id.'
+        }
+        if (this.phase_loc) {
+            return Geometry.validationError(this.phase_loc)
+        }
+        return null
+    }
+}

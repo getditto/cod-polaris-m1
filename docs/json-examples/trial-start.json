@@ -1,0 +1,10 @@
+{
+    "version": 0,
+    "name": "Trial Start",
+    "timestamp": "2024-03-08T20:17:39.926Z",
+    "trial_id": "0.0.2",
+    "num_targets": 1,
+    "type": "Point",
+    "coordinates": [ -122.5, 37.7 ]
+}
+

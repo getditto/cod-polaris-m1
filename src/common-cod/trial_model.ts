@@ -10,11 +10,18 @@ import {
     v0TrialWait,
     Geometry,
     v0TrialObj,
+    TrialState,
 } from './protocol.js'
-import { Store, SyncSubscription } from '@dittolive/ditto'
+import { Store, StoreObserver, SyncSubscription } from '@dittolive/ditto'
 
 export const COLLECTION = 'trials'
 export const MODEL_VERSION = 0
+
+// Either a result or an error, not both.
+export class AwaitTrialResult {
+    result: v0TrialObj | null = null
+    errorStr: string | null = null
+}
 
 type TrialDocV0 = Record<string, string | number | CoordValueV0>
 export class TrialModel {
@@ -82,20 +89,8 @@ export class TrialModel {
         }
     }
 
-    async pollTrial(): Promise<v0TrialObj> {
-        this.ensureSubscribed()
-        // TODO validate timestamp ordering gets latest state
-        // Might want to get all results, sort by date, and log a warning if
-        // the sorting by _id (trial_id) doesn't match.
-        const q = this.trialsQuery(1)
-        console.debug(`pollTrial: ${q}`)
-        const res = await this.store!.execute(q)
-        if (this.dittoCod.isUnitTest() || res.items.length == 0) {
-            console.info('No trials created yet -> Wait')
-            return new v0TrialWait()
-        }
-
-        const doc = res.items[0].value
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    private trialFromDoc(doc: any): v0TrialObj {
         if (doc.model_version != MODEL_VERSION) {
             throw new Error(`Model version mismatch: ${doc.model_version}`)
         }
@@ -124,8 +119,86 @@ export class TrialModel {
         }
     }
 
+    // Doesn't resolve until the desired state is reached.
+    // State must be 'Trial Start' or 'Trial End'
+    async awaitTrial(state: TrialState): Promise<AwaitTrialResult> {
+        this.ensureSubscribed()
+
+        // Notw: should probably set up subscription observer before querying
+        // to avoid the race condition where the update we need comes in
+        // between our poll() and waiting for completion. In practice the
+        // Ditto SDK seems to always generate an extra observer callback
+        // on a new registration, but better not to depend on that behavior.
+        const polled = await this.pollTrial()
+        if (polled.name == state) {
+            console.debug(`awaitTrial: ${state} already reached`)
+            return { result: polled, errorStr: null }
+        }
+
+        const q = this.trialsQuery(1)
+        let observer: StoreObserver | null = null
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        const p = new Promise<AwaitTrialResult>((resolve, reject) => {
+            observer = this.store!.registerObserverWithSignalNext(
+                q,
+                (queryResult, signalNext) => {
+                    if (queryResult.items.length == 0) {
+                        console.info(
+                            'Observer callback w/ empty QueryResult, ignoring.'
+                        )
+                        signalNext()
+                        return
+                    }
+                    if (queryResult.items[0].value == undefined) {
+                        console.info(
+                            'Observer callback w/ undefined value, ignoring.'
+                        )
+                        signalNext()
+                        return
+                    }
+                    const doc = this.trialFromDoc(queryResult.items[0].value)
+                    const newState = doc.name
+                    if (newState == state) {
+                        resolve({ result: doc, errorStr: null })
+                    } else {
+                        console.debug(
+                            `awaitTrial: ${newState} != ${state}, waiting.`
+                        )
+                        signalNext()
+                    }
+                }
+            )
+        })
+        const res = await p
+        if (observer != null) {
+            // Typescript limitation, ignores the null check, doesn't understand
+            // assignment in callback above.
+            // @ts-expect-error property doesn't exist on never
+            observer.cancel()
+            console.debug('done: observer canceled')
+        }
+        return res
+    }
+
+    async pollTrial(): Promise<v0TrialObj> {
+        this.ensureSubscribed()
+        // TODO validate timestamp ordering gets latest state
+        // Might want to get all results, sort by date, and log a warning if
+        // the sorting by _id (trial_id) doesn't match.
+        const q = this.trialsQuery(1)
+        console.debug(`pollTrial: ${q}`)
+        const res = await this.store!.execute(q)
+        if (this.dittoCod.isUnitTest() || res.items.length == 0) {
+            console.info('No trials created yet -> Wait')
+            return new v0TrialWait()
+        }
+
+        const doc = res.items[0].value
+        return this.trialFromDoc(doc)
+    }
+
     async start() {
-        assert(this.dittoCod.isRunning(), 'Must start DittoCOD before Models')
+        assert(this.dittoCod.isRunning(), 'Must start DittoCOD before model.')
         this.store = this.dittoCod.store()
     }
 
