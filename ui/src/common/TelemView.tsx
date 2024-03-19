@@ -4,12 +4,12 @@ import { DataGrid } from '@mui/x-data-grid'
 import { shortUuid } from './util'
 
 const columns = [
-    { field: 'lat', headerName: 'Lat' },
-    { field: 'lon', headerName: 'Lon' },
-    { field: 'avId', headerName: 'ID' },
-    { field: 'heading', headerName: 'Heading' },
-    { field: 'behavior', headerName: 'Behavior' },
-    { field: 'mission_phase', headerName: 'Mission Phase' },
+    { field: 'lat', headerName: 'Lat', flex: 1 },
+    { field: 'lon', headerName: 'Lon', flex: 1 },
+    { field: 'avId', headerName: 'ID', flex: 1 },
+    { field: 'heading', headerName: 'Heading', flex: 1 },
+    { field: 'mission_phase', headerName: 'Mission Phase', flex: 1 },
+    { field: 'behavior', headerName: 'Behavior', flex: 1 },
 ]
 
 function TelemView({ telem }: { telem: Telemetry }) {
@@ -21,8 +21,8 @@ function TelemView({ telem }: { telem: Telemetry }) {
             lon: t.lon.toFixed(5),
             avId: t.id,
             heading: `${t.heading.toFixed(2)} °`,
-            behavior: t.behavior,
             mission_phase: t.mission_phase,
+            behavior: t.behavior,
         }
         return o
     })

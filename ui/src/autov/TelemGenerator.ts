@@ -139,8 +139,10 @@ export class TelemGenerator {
 
         // 3. Move according to heading & velocity
         const degVelocity = this.velocityMPH / APPROX_MI_PER_DEG
-        const deltaLat = Math.sin(this.heading) * degVelocity * deltaTSec
-        const deltaLon = Math.cos(this.heading) * degVelocity * deltaTSec
+        const deltaLat =
+            (Math.sin(this.heading) * degVelocity * deltaTSec) / 3600
+        const deltaLon =
+            (Math.cos(this.heading) * degVelocity * deltaTSec) / 3600
         this.lastCoords[0] += deltaLat
         this.lastCoords[1] += deltaLon
         this.approxNextCoords[0] = this.lastCoords[0] + deltaLat
