@@ -7,7 +7,11 @@ This demo UI uses [Material UI
 on how to use Rollup to create optimized assets.
 
 ## Start Dev UI Server
-To start up a webserver which serves the UI:
+
+First, configure the URLs for your COD services by editing
+[ui/uiconfig.json](ui/uiconfig.json).
+
+Next, start up a webserver which serves the UI:
 
 ```
 npm run dev -- --host 0.0.0.0
