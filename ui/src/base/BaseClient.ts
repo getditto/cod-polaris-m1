@@ -36,6 +36,10 @@ export class BaseClient {
         this.config = config
         axios.defaults.headers.common['Content-Type'] =
             'application/json; charset=utf-8'
+        if (config.bearerToken != '') {
+            axios.defaults.headers.common['Authorization'] =
+                `Bearer ${config.bearerToken}`
+        }
     }
 
     async startTrial(id: string): Promise<StartEndResponse> {

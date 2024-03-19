@@ -35,6 +35,10 @@ export class AutovClient {
     config: UiConfig
     constructor(config: UiConfig) {
         this.config = config
+        if (config.bearerToken != '') {
+            axios.defaults.headers.common['Authorization'] =
+                `Bearer ${config.bearerToken}`
+        }
     }
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
