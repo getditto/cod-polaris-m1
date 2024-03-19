@@ -1,6 +1,6 @@
 import axios from 'axios'
 import { TelemRecord, TrialObj, TrialState } from '../common/types'
-import { AutovConfig } from './Config'
+import { UiConfig } from '../common/UiConfig'
 import { axiosErrorResponse } from '../common/util'
 
 export class TrialResponse {
@@ -32,8 +32,8 @@ export class TrialResponse {
 }
 
 export class AutovClient {
-    config: AutovConfig
-    constructor(config: AutovConfig) {
+    config: UiConfig
+    constructor(config: UiConfig) {
         this.config = config
     }
 
