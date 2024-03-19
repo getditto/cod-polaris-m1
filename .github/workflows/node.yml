@@ -28,4 +28,13 @@ jobs:
     - run: npm run build
     - run: npm run lint
     - run: npm test
+    - name: UI npm clean install
+      run: npm ci
+      working-directory: ./ui
+    - name: UI npm build
+      run: npm run build
+      working-directory: ./ui
+    - name: UI npm lint
+      run: npm run lint
+      working-directory: ./ui
 
