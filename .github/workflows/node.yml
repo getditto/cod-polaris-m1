@@ -24,8 +24,23 @@ jobs:
       with:
         node-version: ${{ matrix.node-version }}
         cache: 'npm'
-    - run: npm ci
-    - run: npm run build
-    - run: npm run lint
-    - run: npm test
+   - run: npm ci
+   - run: npm run build
+   - run: npm run lint
+   - run: npm test
+
+  build-ui:
+    runs-on: ubuntu-latest
+    needs: build
+    strategy:
+      matrix:
+        node-version: [18.x, 20.x]
+    steps:
+    - working-directory: ui
+    - name: ui npm install
+      run: npm ci
+    - name: ui npm build
+      run: npm run build
+    - name: ui npm lint
+      run: npm run lint
 
