@@ -3,14 +3,12 @@ import { Box, Grid, ThemeProvider, createTheme } from '@mui/material'
 import BaseUi from './base/BaseUi'
 import AutovUi from './autov/AutovUi'
 import { useRef } from 'react'
-import { AutovConfig } from './autov/Config'
-import { BaseConfig } from './base/BaseConfig'
+import { UiConfig } from './common/UiConfig'
 
 const dark = createTheme({ palette: { mode: 'dark' } })
 
 function App() {
-    const autovConfig = useRef(new AutovConfig())
-    const baseConfig = useRef(new BaseConfig())
+    const uiConfig = useRef(new UiConfig())
 
     return (
         <ThemeProvider theme={dark}>
@@ -22,10 +20,10 @@ function App() {
             >
                 <Grid container sx={{ height: '100vh' }}>
                     <Grid item xs={12} lg={6}>
-                        <AutovUi config={autovConfig.current} />
+                        <AutovUi config={uiConfig.current} />
                     </Grid>
                     <Grid item xs={12} lg={6}>
-                        <BaseUi config={baseConfig.current} />
+                        <BaseUi config={uiConfig.current} />
                     </Grid>
                 </Grid>
             </Box>

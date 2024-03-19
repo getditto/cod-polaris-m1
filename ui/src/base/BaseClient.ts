@@ -6,7 +6,7 @@ import {
     makeTrialStart,
 } from '../common/types'
 import { axiosErrorResponse } from '../common/util'
-import { BaseConfig } from './BaseConfig'
+import { UiConfig } from '../common/UiConfig'
 
 export class StartEndResponse {
     httpStatus: number
@@ -31,8 +31,8 @@ export class StartEndResponse {
 }
 
 export class BaseClient {
-    config: BaseConfig
-    constructor(config: BaseConfig) {
+    config: UiConfig
+    constructor(config: UiConfig) {
         this.config = config
         axios.defaults.headers.common['Content-Type'] =
             'application/json; charset=utf-8'

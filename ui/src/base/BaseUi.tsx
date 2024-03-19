@@ -8,11 +8,11 @@ import { TelemRecord, Telemetry, TrialState } from '../common/types'
 import { useState, useRef } from 'react'
 import TelemView from '../common/TelemView'
 import { DEFAULT_TELEMETRY } from '../common/Default'
-import { BaseConfig } from './BaseConfig'
 import { assert, genTrialIds } from '../common/util'
 import { TelemReader } from './TelemReader'
+import { UiConfig } from '../common/UiConfig'
 
-function BaseUi({ config }: { config: BaseConfig }) {
+function BaseUi({ config }: { config: UiConfig }) {
     const [trialStatus, setTrialStatus] = useState<TrialState>(TrialState.Wait)
     const [logRows, setLogRows] = useState<LogEntry[]>([])
     const [telem, setTelem] = useState<Telemetry>(DEFAULT_TELEMETRY)
