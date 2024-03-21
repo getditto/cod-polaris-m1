@@ -11,6 +11,7 @@
 
     "test-duration-sec": "60",
     "http-port": "8082",
+    "http-host": "localhost",
     "log-level": "info",
     "bearer-token": "flux230{showroom"
   }
