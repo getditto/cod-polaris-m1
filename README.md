@@ -70,6 +70,11 @@ After you setup the environment variables in `.env` and compile with `tsc`
 npm run start-prod-cons
 ```
 
+### As Containers
+
+See in the `container` subdirectory, for info on building and running COD nodes
+from containers.
+
 ## Development
 
 To run lint and formatting checks:
