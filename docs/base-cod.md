@@ -1,5 +1,3 @@
-__Go back to [COD Overview](./README.md)__
-
 # Base COD Server
 
 Design doc for a HTTP <-> Ditto proxy service which acts as the Base-side

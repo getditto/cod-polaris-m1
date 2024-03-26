@@ -1,0 +1,15 @@
+{
+    "ditto": {
+        "app-id": "09fcd60d-69d2-414d-bc66-9c2475077258",
+        "app-token": "1875cbf0-bbdd-4111-adf9-b254166e5c79",
+        "shared-key": "",
+        "offline-token": "",
+        "use-cloud": false,
+        "use-lan": true,
+        "use-ble": true,
+        "bpa-url": "portal",
+        "test-duration-sec": "60",
+        "http-port": "8081",
+        "log-level": "debug"
+    }
+}

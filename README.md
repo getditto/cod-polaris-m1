@@ -2,27 +2,26 @@
 
 Ditto Common Operational Database (COD) Prototypes
 
-__See also: [COD Overview](docs/README.md) for specific project deliverables.__
+**See also: [COD Overview](docs/README.md) for specific project deliverables.**
 
 ## Prototype Apps
 
-
-*autov-cod*
+_autov-cod_
 
 This is a HTTP to Ditto proxy which is intended to run as a separate process on
 an autonomous vehicle ("autov"), providing an easy way to integrate multiple other
 processes with a single common operational database (COD) based on the Ditto SDK.
 
-*base-cod*
+_base-cod_
 This is the base-facing side of `autov-cod`.
 
-*Producer/Consumer*
+_Producer/Consumer_
 
 `src/prod_cons/index.ts` a simple producer/consumer app including metadata and
 sensor (camera) communication and a simple HTTP UI which provides a "webcams
 over Ditto" demo.
 
-*Peer-to-peer Autonomous Vehicle and AI Object Recognition*
+_Peer-to-peer Autonomous Vehicle and AI Object Recognition_
 
 Work-in-progress test and prototyping support for autonomous vehicle
 integration experiments.
@@ -31,8 +30,8 @@ integration experiments.
 
 Once you have this repo cloned:
 
-1) Create a `./config.json` file with the appropriate BigPeer (or offline dev
-token) values. There is a template in this repo at `config.json.example`
+1. Create a `./config.json` file with the appropriate BigPeer (or offline dev
+   token) values. There is a template in this repo at `config.json.example`
 
 ```
 {
@@ -48,17 +47,18 @@ token) values. There is a template in this repo at `config.json.example`
   }
 ```
 
-2) Install dependencies
+2. Install dependencies
 
 ```
 npm install
 ```
 
-3) Compile the Typescript
+3. Compile the Typescript
 
 ```
 npm run build
 ```
+
 ## Running
 
 See (./package.json) for the available `npm` scripts. For example, to run the Producer/Consumer demo:
@@ -72,8 +72,7 @@ npm run start-prod-cons
 
 ### As Containers
 
-See in the `container` subdirectory, for info on building and running COD nodes
-from containers.
+See the [container/README.md](container/README.md) for info on building and running COD nodes from Docker or Podman.
 
 ## Development
 

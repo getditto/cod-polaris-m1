@@ -1,5 +1,3 @@
-__Go back to [COD Overview](./README.md)__
-
 # AutoV COD Server
 Design doc for a HTTP <-> Ditto proxy which acts as an autonomous vehicle's
 common operational database (AutoV COD).
